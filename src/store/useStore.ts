@@ -5,6 +5,7 @@ import type {
   Category,
   Goal,
   MonthlyReflection,
+  RecurringItem,
   ShoppingItem,
   Transaction,
   UnlockedAchievement,
@@ -12,6 +13,8 @@ import type {
 } from '../types';
 import { evaluateAchievements } from '../data/achievements';
 import { CUSTOM_CATEGORY_COLORS } from '../data/categories';
+
+const currentMonth = () => new Date().toISOString().slice(0, 7);
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
@@ -29,6 +32,8 @@ interface StoreState {
   customCategories: Category[];
   shoppingList: ShoppingItem[];
   shoppingBudget: number;
+  customStores: string[];
+  recurringItems: RecurringItem[];
   settings: UserSettings;
   lastCelebratedGoal: string | null;
   lastUnlockedIds: string[];
@@ -49,13 +54,19 @@ interface StoreState {
   updateCustomCategory: (id: string, patch: { label?: string; emoji?: string }) => void;
   removeCustomCategory: (id: string) => void;
 
-  addShoppingItem: (item: { name: string; estPrice: number | null; note?: string | null }) => void;
+  addShoppingItem: (item: { name: string; estPrice: number | null; store?: string | null }) => void;
   toggleShoppingItem: (id: string) => void;
   removeShoppingItem: (id: string) => void;
-  updateShoppingItem: (id: string, patch: { name?: string; estPrice?: number | null; note?: string | null }) => void;
+  updateShoppingItem: (id: string, patch: { name?: string; estPrice?: number | null; store?: string | null }) => void;
   clearCheckedShoppingItems: () => void;
   clearShoppingList: () => void;
   setShoppingBudget: (amount: number) => void;
+
+  addRecurringItem: (item: Omit<RecurringItem, 'id' | 'createdAt' | 'lastAppliedMonth'>) => void;
+  updateRecurringItem: (id: string, patch: Partial<Omit<RecurringItem, 'id' | 'createdAt'>>) => void;
+  removeRecurringItem: (id: string) => void;
+  applyRecurringItem: (id: string) => void;
+  skipRecurringItem: (id: string) => void;
 
   updateSettings: (s: Partial<UserSettings>) => void;
   clearLastUnlocked: () => void;
@@ -93,6 +104,8 @@ export const useStore = create<StoreState>()(
       customCategories: [],
       shoppingList: [],
       shoppingBudget: 0,
+      customStores: [],
+      recurringItems: [],
       settings: defaultSettings,
       lastCelebratedGoal: null,
       lastUnlockedIds: [],
@@ -219,15 +232,20 @@ export const useStore = create<StoreState>()(
 
       addShoppingItem: (item) => {
         if (!item.name.trim()) return;
+        const store = item.store?.trim() || null;
         const newItem: ShoppingItem = {
           id: uid(),
           name: item.name.trim(),
           estPrice: item.estPrice !== null ? round2(Math.abs(item.estPrice)) : null,
-          note: item.note?.trim() || null,
+          store,
           checked: false,
           createdAt: Date.now(),
         };
-        set((state) => ({ shoppingList: [...state.shoppingList, newItem] }));
+        set((state) => ({
+          shoppingList: [...state.shoppingList, newItem],
+          customStores:
+            store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
+        }));
       },
 
       toggleShoppingItem: (id) => {
@@ -241,6 +259,7 @@ export const useStore = create<StoreState>()(
       },
 
       updateShoppingItem: (id, patch) => {
+        const store = patch.store !== undefined ? patch.store?.trim() || null : undefined;
         set((state) => ({
           shoppingList: state.shoppingList.map((i) =>
             i.id === id
@@ -250,10 +269,12 @@ export const useStore = create<StoreState>()(
                   ...(patch.estPrice !== undefined
                     ? { estPrice: patch.estPrice !== null ? round2(Math.abs(patch.estPrice)) : null }
                     : {}),
-                  ...(patch.note !== undefined ? { note: patch.note?.trim() || null } : {}),
+                  ...(store !== undefined ? { store } : {}),
                 }
               : i
           ),
+          customStores:
+            store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
         }));
       },
 
@@ -264,6 +285,66 @@ export const useStore = create<StoreState>()(
       clearShoppingList: () => set({ shoppingList: [] }),
 
       setShoppingBudget: (amount) => set({ shoppingBudget: round2(Math.max(0, amount)) }),
+
+      addRecurringItem: (item) => {
+        const newItem: RecurringItem = {
+          ...item,
+          label: item.label.trim() || 'Sin nombre',
+          amount: round2(Math.abs(item.amount)),
+          dayOfMonth: Math.min(28, Math.max(1, Math.round(item.dayOfMonth))),
+          id: uid(),
+          lastAppliedMonth: null,
+          createdAt: Date.now(),
+        };
+        set((state) => ({ recurringItems: [...state.recurringItems, newItem] }));
+      },
+
+      updateRecurringItem: (id, patch) => {
+        set((state) => ({
+          recurringItems: state.recurringItems.map((r) =>
+            r.id === id
+              ? {
+                  ...r,
+                  ...patch,
+                  ...(patch.label !== undefined ? { label: patch.label.trim() || r.label } : {}),
+                  ...(patch.amount !== undefined ? { amount: round2(Math.abs(patch.amount)) } : {}),
+                  ...(patch.dayOfMonth !== undefined
+                    ? { dayOfMonth: Math.min(28, Math.max(1, Math.round(patch.dayOfMonth))) }
+                    : {}),
+                }
+              : r
+          ),
+        }));
+      },
+
+      removeRecurringItem: (id) => {
+        set((state) => ({ recurringItems: state.recurringItems.filter((r) => r.id !== id) }));
+      },
+
+      applyRecurringItem: (id) => {
+        const item = get().recurringItems.find((r) => r.id === id);
+        if (!item) return;
+        get().addTransaction({
+          type: item.type,
+          amount: item.amount,
+          category: item.category,
+          note: item.label,
+          date: todayIso(),
+        });
+        set((state) => ({
+          recurringItems: state.recurringItems.map((r) =>
+            r.id === id ? { ...r, lastAppliedMonth: currentMonth() } : r
+          ),
+        }));
+      },
+
+      skipRecurringItem: (id) => {
+        set((state) => ({
+          recurringItems: state.recurringItems.map((r) =>
+            r.id === id ? { ...r, lastAppliedMonth: currentMonth() } : r
+          ),
+        }));
+      },
 
       updateSettings: (s) => {
         set((state) => ({ settings: { ...state.settings, ...s } }));

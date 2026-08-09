@@ -8,6 +8,7 @@ import MascotTip from '../MascotTip';
 import DailyAllowanceCard from '../DailyAllowanceCard';
 import BudgetsOverview from '../BudgetsOverview';
 import PeriodicGoalCard from '../PeriodicGoalCard';
+import RecurringDueCard from '../RecurringDueCard';
 import { getCategory } from '../../data/categories';
 import { useAllCategories } from '../../hooks/useCategories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
@@ -53,6 +54,7 @@ export default function Dashboard({
         <p className="text-soft text-sm">{t('dashboard.subtitle')}</p>
       </div>
 
+      <RecurringDueCard />
       <DailyAllowanceCard onAddTransaction={onAddTransaction} />
       <PeriodicGoalCard />
 

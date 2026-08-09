@@ -5,6 +5,7 @@ import { useExpenseCategories, useAllCategories } from '../../hooks/useCategorie
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
 import { useT } from '../../i18n/useT';
 import CategoryManager from '../CategoryManager';
+import RecurringManager from '../RecurringManager';
 import CurrencyPicker from '../CurrencyPicker';
 import LiveRateTicker from '../LiveRateTicker';
 import type { ThemeId } from '../../types';
@@ -33,6 +34,8 @@ export default function SettingsView() {
         customCategories: state.customCategories,
         shoppingList: state.shoppingList,
         shoppingBudget: state.shoppingBudget,
+        customStores: state.customStores,
+        recurringItems: state.recurringItems,
         settings: state.settings,
       },
       null,
@@ -222,6 +225,8 @@ export default function SettingsView() {
           </div>
         )}
       </div>
+
+      <RecurringManager />
 
       <CategoryManager />
 

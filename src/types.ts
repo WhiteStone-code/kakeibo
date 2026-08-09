@@ -111,9 +111,25 @@ export interface ShoppingItem {
   id: string;
   name: string;
   estPrice: number | null;
-  /** Nota personal: dónde comprarlo mejor/más barato, o lo que sea útil recordar. */
-  note: string | null;
+  /** Dónde conviene comprarlo (cadena conocida o negocio propio, ej. "la
+   * panadería de mi calle") — para comparar precios entre sitios. */
+  store: string | null;
   checked: boolean;
+  createdAt: number;
+}
+
+export interface RecurringItem {
+  id: string;
+  type: TransactionType;
+  label: string;
+  emoji: string;
+  amount: number;
+  category: string;
+  /** Día del mes en que toca (1-28, para que siempre exista ese día). */
+  dayOfMonth: number;
+  active: boolean;
+  /** Último mes (yyyy-MM) en que ya se registró o se saltó a propósito. */
+  lastAppliedMonth: string | null;
   createdAt: number;
 }
 

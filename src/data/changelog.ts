@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.6.0';
+export const APP_VERSION = '0.7.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,16 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.7.0',
+    date: '9 ago 2026',
+    title: 'Lista de la compra con tiendas, compartir por WhatsApp y gastos fijos',
+    items: [
+      'En la lista de la compra ya puedes elegir dónde comprar cada cosa: Mercadona, Carrefour, Lidl, Aldi, Coop, Migros... o tu propia tienda (la panadería, la carnicería del barrio)',
+      'Botón para compartir la lista por WhatsApp (o cualquier app) — se abre el chat con el texto ya listo, tú eliges a quién mandarlo',
+      'Nuevo: gastos e ingresos fijos (nómina, alquiler, aportación automática a inversión...). El día que toca, aparece un aviso en el Panel para registrarlo con un toque o saltarlo ese mes',
+    ],
+  },
   {
     version: '0.6.0',
     date: '9 ago 2026',

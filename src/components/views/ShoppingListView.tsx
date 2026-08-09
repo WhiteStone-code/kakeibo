@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { useT } from '../../i18n/useT';
 import { formatMoney } from '../../utils/format';
+import { buildShoppingListText } from '../../utils/shareShoppingList';
+import StorePicker from '../StorePicker';
 import type { ShoppingItem } from '../../types';
 
 export default function ShoppingListView() {
@@ -19,8 +21,8 @@ export default function ShoppingListView() {
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [noteDraft, setNoteDraft] = useState('');
+  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
+  const [canShare, setCanShare] = useState(() => typeof navigator !== 'undefined' && 'share' in navigator);
 
   const { pending, checked, totalSpent, remaining } = useMemo(() => {
     const pending = shoppingList.filter((i) => !i.checked);
@@ -43,14 +45,25 @@ export default function ShoppingListView() {
     setPrice('');
   };
 
-  const startNote = (item: ShoppingItem) => {
-    setEditingNoteId(item.id);
-    setNoteDraft(item.note ?? '');
+  const shareText = () => buildShoppingListText(shoppingList, currency, t('shopping.shareTitle'));
+
+  const handleShare = async () => {
+    const text = shareText();
+    if (canShare) {
+      try {
+        await navigator.share({ title: t('shopping.shareTitle'), text });
+        return;
+      } catch {
+        // el usuario canceló el panel de compartir, o el navegador falló — cae al de WhatsApp
+        setCanShare(false);
+      }
+    }
+    openWhatsapp();
   };
 
-  const saveNote = (id: string) => {
-    updateShoppingItem(id, { note: noteDraft });
-    setEditingNoteId(null);
+  const openWhatsapp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText())}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const sendToMovimientos = () => {
@@ -84,11 +97,11 @@ export default function ShoppingListView() {
         )}
         <button
           type="button"
-          onClick={() => startNote(item)}
-          className="opacity-0 group-hover:opacity-100 text-soft hover:text-accent px-1 text-sm"
-          title={t('shopping.notePlaceholder')}
+          onClick={() => setEditingStoreId(editingStoreId === item.id ? null : item.id)}
+          className="text-soft hover:text-accent px-1 text-sm"
+          title={t('shopping.whereToBuy')}
         >
-          📝
+          📍
         </button>
         <button
           type="button"
@@ -98,23 +111,23 @@ export default function ShoppingListView() {
           ✕
         </button>
       </div>
-      {editingNoteId === item.id ? (
-        <input
-          autoFocus
-          value={noteDraft}
-          onChange={(e) => setNoteDraft(e.target.value)}
-          onBlur={() => saveNote(item.id)}
-          onKeyDown={(e) => e.key === 'Enter' && saveNote(item.id)}
-          placeholder={t('shopping.notePlaceholder')}
-          className="w-full mt-1.5 ml-8 px-2 py-1.5 rounded-lg bg-surface-2 border border-theme outline-none focus:border-accent text-xs"
-        />
+      {editingStoreId === item.id ? (
+        <div className="mt-2 ml-8">
+          <StorePicker
+            value={item.store}
+            onChange={(store) => {
+              updateShoppingItem(item.id, { store });
+              if (store) setEditingStoreId(null);
+            }}
+          />
+        </div>
       ) : (
-        item.note && (
+        item.store && (
           <button
-            onClick={() => startNote(item)}
-            className="text-xs text-soft italic mt-0.5 ml-8 text-left hover:text-accent"
+            onClick={() => setEditingStoreId(item.id)}
+            className="text-xs text-soft mt-0.5 ml-8 text-left hover:text-accent"
           >
-            💡 {item.note}
+            📍 {item.store}
           </button>
         )
       )}
@@ -123,9 +136,25 @@ export default function ShoppingListView() {
 
   return (
     <div className="flex flex-col gap-5 pb-24 md:pb-8 max-w-2xl">
-      <div>
-        <h1 className="font-display font-extrabold text-2xl">{t('shopping.title')}</h1>
-        <p className="text-soft text-sm">{t('shopping.subtitle')}</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="font-display font-extrabold text-2xl">{t('shopping.title')}</h1>
+          <p className="text-soft text-sm">{t('shopping.subtitle')}</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShare}
+            className="btn-accent font-bold px-3 py-2 rounded-xl text-xs shadow-md whitespace-nowrap"
+          >
+            {t('shopping.share')}
+          </button>
+          <button
+            onClick={openWhatsapp}
+            className="card-soft font-bold px-3 py-2 rounded-xl text-xs whitespace-nowrap"
+          >
+            {t('shopping.shareWhatsapp')}
+          </button>
+        </div>
       </div>
 
       <div className="card p-4 flex flex-col gap-2">
