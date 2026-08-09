@@ -33,6 +33,8 @@ interface StoreState {
   shoppingList: ShoppingItem[];
   shoppingBudget: number;
   customStores: string[];
+  customOccasions: string[];
+  shoppingCheckedCount: number;
   recurringItems: RecurringItem[];
   settings: UserSettings;
   lastCelebratedGoal: string | null;
@@ -54,10 +56,19 @@ interface StoreState {
   updateCustomCategory: (id: string, patch: { label?: string; emoji?: string }) => void;
   removeCustomCategory: (id: string) => void;
 
-  addShoppingItem: (item: { name: string; estPrice: number | null; store?: string | null }) => void;
+  addShoppingItem: (item: {
+    name: string;
+    estPrice: number | null;
+    store?: string | null;
+    occasion?: string | null;
+    neededBy?: string | null;
+  }) => void;
   toggleShoppingItem: (id: string) => void;
   removeShoppingItem: (id: string) => void;
-  updateShoppingItem: (id: string, patch: { name?: string; estPrice?: number | null; store?: string | null }) => void;
+  updateShoppingItem: (
+    id: string,
+    patch: { name?: string; estPrice?: number | null; store?: string | null; occasion?: string | null; neededBy?: string | null }
+  ) => void;
   clearCheckedShoppingItems: () => void;
   clearShoppingList: () => void;
   setShoppingBudget: (amount: number) => void;
@@ -105,6 +116,8 @@ export const useStore = create<StoreState>()(
       shoppingList: [],
       shoppingBudget: 0,
       customStores: [],
+      customOccasions: [],
+      shoppingCheckedCount: 0,
       recurringItems: [],
       settings: defaultSettings,
       lastCelebratedGoal: null,
@@ -233,11 +246,14 @@ export const useStore = create<StoreState>()(
       addShoppingItem: (item) => {
         if (!item.name.trim()) return;
         const store = item.store?.trim() || null;
+        const occasion = item.occasion?.trim() || null;
         const newItem: ShoppingItem = {
           id: uid(),
           name: item.name.trim(),
           estPrice: item.estPrice !== null ? round2(Math.abs(item.estPrice)) : null,
           store,
+          occasion,
+          neededBy: item.neededBy || null,
           checked: false,
           createdAt: Date.now(),
         };
@@ -245,13 +261,23 @@ export const useStore = create<StoreState>()(
           shoppingList: [...state.shoppingList, newItem],
           customStores:
             store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
+          customOccasions:
+            occasion && !state.customOccasions.includes(occasion)
+              ? [...state.customOccasions, occasion]
+              : state.customOccasions,
         }));
       },
 
       toggleShoppingItem: (id) => {
-        set((state) => ({
-          shoppingList: state.shoppingList.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i)),
-        }));
+        set((state) => {
+          const item = state.shoppingList.find((i) => i.id === id);
+          const nowChecking = item && !item.checked;
+          return {
+            shoppingList: state.shoppingList.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i)),
+            shoppingCheckedCount: nowChecking ? state.shoppingCheckedCount + 1 : state.shoppingCheckedCount,
+          };
+        });
+        recomputeAchievements(set, get);
       },
 
       removeShoppingItem: (id) => {
@@ -260,6 +286,7 @@ export const useStore = create<StoreState>()(
 
       updateShoppingItem: (id, patch) => {
         const store = patch.store !== undefined ? patch.store?.trim() || null : undefined;
+        const occasion = patch.occasion !== undefined ? patch.occasion?.trim() || null : undefined;
         set((state) => ({
           shoppingList: state.shoppingList.map((i) =>
             i.id === id
@@ -270,11 +297,17 @@ export const useStore = create<StoreState>()(
                     ? { estPrice: patch.estPrice !== null ? round2(Math.abs(patch.estPrice)) : null }
                     : {}),
                   ...(store !== undefined ? { store } : {}),
+                  ...(occasion !== undefined ? { occasion } : {}),
+                  ...(patch.neededBy !== undefined ? { neededBy: patch.neededBy } : {}),
                 }
               : i
           ),
           customStores:
             store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
+          customOccasions:
+            occasion && !state.customOccasions.includes(occasion)
+              ? [...state.customOccasions, occasion]
+              : state.customOccasions,
         }));
       },
 
@@ -414,12 +447,15 @@ function recomputeAchievements(
   const totalSaved = state.goals.reduce((sum, g) => sum + g.savedAmount, 0);
   const monthsTracked = new Set(state.transactions.map((t) => t.date.slice(0, 7))).size;
   const streak = computeStreak(state.transactions);
+  const distinctStoresUsed = new Set(state.shoppingList.filter((i) => i.store).map((i) => i.store)).size;
   const unlockedIds = evaluateAchievements({
     transactions: state.transactions,
     goals: state.goals,
     streak,
     totalSaved,
     monthsTracked,
+    shoppingCheckedCount: state.shoppingCheckedCount,
+    distinctStoresUsed,
   });
   const existingIds = new Set(state.unlocked.map((u) => u.id));
   const newlyUnlocked = unlockedIds.filter((id) => !existingIds.has(id));

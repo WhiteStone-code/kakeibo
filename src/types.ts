@@ -98,6 +98,8 @@ export interface AchievementContext {
   streak: number;
   totalSaved: number;
   monthsTracked: number;
+  shoppingCheckedCount: number;
+  distinctStoresUsed: number;
 }
 
 export interface UnlockedAchievement {
@@ -114,6 +116,11 @@ export interface ShoppingItem {
   /** Dónde conviene comprarlo (cadena conocida o negocio propio, ej. "la
    * panadería de mi calle") — para comparar precios entre sitios. */
   store: string | null;
+  /** Para qué ocasión es (ej. "Cumpleaños de Juan", "Semana que viene") —
+   * agrupa la lista de otra forma, pensada para planificar con antelación. */
+  occasion: string | null;
+  /** Fecha en la que hace falta tenerlo listo, ligada a la ocasión. */
+  neededBy: string | null; // ISO date
   checked: boolean;
   createdAt: number;
 }

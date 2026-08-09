@@ -86,6 +86,20 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     description: 'Llevas 6 meses distintos registrados.',
     check: (ctx) => ctx.monthsTracked >= 6,
   },
+  {
+    id: 'lista-compra-10',
+    emoji: '🧺',
+    title: 'Compra planificada',
+    description: 'Marcaste 10 productos comprados en tu lista de la compra.',
+    check: (ctx) => ctx.shoppingCheckedCount >= 10,
+  },
+  {
+    id: 'comparador-precios',
+    emoji: '🏷️',
+    title: 'Cazador de ofertas',
+    description: 'Usaste 3 tiendas distintas en tu lista de la compra.',
+    check: (ctx) => ctx.distinctStoresUsed >= 3,
+  },
 ];
 
 export const evaluateAchievements = (ctx: AchievementContext): string[] =>

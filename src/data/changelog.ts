@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.7.0';
+export const APP_VERSION = '0.8.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,17 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.8.0',
+    date: '9 ago 2026',
+    title: 'La lista de la compra se organiza sola',
+    items: [
+      'Nuevo: "Por tienda" agrupa la lista — todo lo de Lidl junto, todo lo de Coop junto, etc. — para no andar buscando producto a producto',
+      'Nuevo: "Por ocasión" agrupa por qué es cada cosa (cumpleaños, semana que viene...) con la cuenta atrás de días, para planificar con antelación',
+      'Recordatorio de la próxima fecha de ofertas (Black Friday, rebajas...) en la lista de la compra',
+      '2 logros nuevos ligados a la lista de la compra',
+    ],
+  },
   {
     version: '0.7.0',
     date: '9 ago 2026',

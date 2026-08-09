@@ -295,6 +295,22 @@ const DICT: Record<string, Row> = {
   'shopping.share': { es: '📤 Compartir lista', en: '📤 Share list', pt: '📤 Partilhar lista', it: '📤 Condividi lista', fr: '📤 Partager la liste', de: '📤 Liste teilen' },
   'shopping.shareWhatsapp': { es: '💬 Enviar por WhatsApp', en: '💬 Send via WhatsApp', pt: '💬 Enviar por WhatsApp', it: '💬 Invia con WhatsApp', fr: '💬 Envoyer sur WhatsApp', de: '💬 Über WhatsApp senden' },
   'shopping.shareTitle': { es: 'Lista de la compra', en: 'Shopping list', pt: 'Lista de compras', it: 'Lista della spesa', fr: 'Liste de courses', de: 'Einkaufsliste' },
+  'shopping.noStore': { es: 'Sin tienda', en: 'No store', pt: 'Sem loja', it: 'Senza negozio', fr: 'Sans magasin', de: 'Ohne Laden' },
+  'shopping.generalOccasion': { es: 'Compra general', en: 'General shopping', pt: 'Compra geral', it: 'Spesa generale', fr: 'Courses générales', de: 'Allgemeiner Einkauf' },
+  'shopping.groupByStore': { es: '📍 Por tienda', en: '📍 By store', pt: '📍 Por loja', it: '📍 Per negozio', fr: '📍 Par magasin', de: '📍 Nach Laden' },
+  'shopping.groupByOccasion': { es: '🎯 Por ocasión', en: '🎯 By occasion', pt: '🎯 Por ocasião', it: '🎯 Per occasione', fr: '🎯 Par occasion', de: '🎯 Nach Anlass' },
+  'shopping.addOccasion': { es: '↓ Añadir ocasión o fecha (cumpleaños, semana que viene...)', en: '↓ Add occasion or date (birthday, next week...)', pt: '↓ Adicionar ocasião ou data (aniversário, próxima semana...)', it: '↓ Aggiungi occasione o data (compleanno, settimana prossima...)', fr: '↓ Ajouter une occasion ou une date (anniversaire, semaine prochaine...)', de: '↓ Anlass oder Datum hinzufügen (Geburtstag, nächste Woche...)' },
+  'shopping.occasionPlaceholder': { es: 'Ej: Cumpleaños de Juan', en: 'E.g.: Juan’s birthday', pt: 'Ex: Aniversário do Juan', it: 'Es: Compleanno di Juan', fr: 'Ex : Anniversaire de Juan', de: 'Z. B.: Juans Geburtstag' },
+  'deals.winterSales': { es: 'Rebajas de invierno', en: 'Winter sales', pt: 'Saldos de inverno', it: 'Saldi invernali', fr: 'Soldes d’hiver', de: 'Winterschlussverkauf' },
+  'deals.summerSales': { es: 'Rebajas de verano', en: 'Summer sales', pt: 'Saldos de verão', it: 'Saldi estivi', fr: 'Soldes d’été', de: 'Sommerschlussverkauf' },
+  'deals.primeDay': { es: 'Prime Day (orientativo)', en: 'Prime Day (estimated)', pt: 'Prime Day (estimado)', it: 'Prime Day (stimato)', fr: 'Prime Day (estimé)', de: 'Prime Day (geschätzt)' },
+  'deals.blackFriday': { es: 'Black Friday', en: 'Black Friday', pt: 'Black Friday', it: 'Black Friday', fr: 'Black Friday', de: 'Black Friday' },
+  'deals.cyberMonday': { es: 'Cyber Monday', en: 'Cyber Monday', pt: 'Cyber Monday', it: 'Cyber Monday', fr: 'Cyber Monday', de: 'Cyber Monday' },
+  'deals.christmas': { es: 'Compras de Navidad', en: 'Christmas shopping', pt: 'Compras de Natal', it: 'Regali di Natale', fr: 'Achats de Noël', de: 'Weihnachtseinkäufe' },
+  'deals.title': { es: '🏷️ Próxima fecha de ofertas', en: '🏷️ Next deals date', pt: '🏷️ Próxima data de saldos', it: '🏷️ Prossima data di offerte', fr: '🏷️ Prochaine date de soldes', de: '🏷️ Nächster Angebotstermin' },
+  'deals.daysAway': { es: 'en {days} días', en: 'in {days} days', pt: 'em {days} dias', it: 'tra {days} giorni', fr: 'dans {days} jours', de: 'in {days} Tagen' },
+  'deals.today': { es: '¡Es hoy!', en: 'It’s today!', pt: 'É hoje!', it: 'È oggi!', fr: 'C’est aujourd’hui !', de: 'Ist heute!' },
+  'deals.disclaimer': { es: 'Fechas orientativas de cada año — no son precios en tiempo real, solo para que no te pille por sorpresa.', en: 'Approximate yearly dates — not live prices, just so it doesn’t catch you off guard.', pt: 'Datas aproximadas de cada ano — não são preços em tempo real, só para não te apanhar desprevenido.', it: 'Date indicative di ogni anno — non sono prezzi in tempo reale, solo per non farti trovare impreparato.', fr: 'Dates approximatives de chaque année — pas des prix en direct, juste pour ne pas être pris au dépourvu.', de: 'Ungefähre jährliche Termine — keine Live-Preise, nur damit es dich nicht überrascht.' },
   'shopping.registerAndClear': { es: '✅ Registrar {amount} como gasto y vaciar el carro', en: '✅ Log {amount} as an expense and clear the cart', pt: '✅ Registar {amount} como despesa e esvaziar o carrinho', it: '✅ Registra {amount} come spesa e svuota il carrello', fr: '✅ Enregistrer {amount} comme dépense et vider le panier', de: '✅ {amount} als Ausgabe erfassen und Wagen leeren' },
 
   // ---------- Invertir ----------
@@ -394,6 +410,11 @@ const DICT: Record<string, Row> = {
   'ach.dos-meses.desc': { es: 'Llevas 2 meses distintos registrados.', en: 'You’ve logged data across 2 different months.', pt: 'Já registaste em 2 meses diferentes.', it: 'Hai registrato dati in 2 mesi diversi.', fr: 'Tu as enregistré des données sur 2 mois différents.', de: 'Du hast in 2 verschiedenen Monaten erfasst.' },
   'ach.seis-meses.title': { es: 'Camino del Torii', en: 'Path of the Torii', pt: 'Caminho do Torii', it: 'Sentiero del Torii', fr: 'Chemin du Torii', de: 'Pfad des Torii' },
   'ach.seis-meses.desc': { es: 'Llevas 6 meses distintos registrados.', en: 'You’ve logged data across 6 different months.', pt: 'Já registaste em 6 meses diferentes.', it: 'Hai registrato dati in 6 mesi diversi.', fr: 'Tu as enregistré des données sur 6 mois différents.', de: 'Du hast in 6 verschiedenen Monaten erfasst.' },
+
+  'ach.lista-compra-10.title': { es: 'Compra planificada', en: 'Planned shopping', pt: 'Compra planeada', it: 'Spesa pianificata', fr: 'Courses planifiées', de: 'Geplanter Einkauf' },
+  'ach.lista-compra-10.desc': { es: 'Marcaste 10 productos comprados en tu lista de la compra.', en: 'You checked off 10 items in your shopping list.', pt: 'Marcaste 10 produtos comprados na tua lista de compras.', it: 'Hai spuntato 10 prodotti nella tua lista della spesa.', fr: 'Tu as coché 10 articles dans ta liste de courses.', de: 'Du hast 10 Artikel in deiner Einkaufsliste abgehakt.' },
+  'ach.comparador-precios.title': { es: 'Cazador de ofertas', en: 'Deal hunter', pt: 'Caçador de ofertas', it: 'Cacciatore di offerte', fr: 'Chasseur de bonnes affaires', de: 'Schnäppchenjäger' },
+  'ach.comparador-precios.desc': { es: 'Usaste 3 tiendas distintas en tu lista de la compra.', en: 'You used 3 different stores in your shopping list.', pt: 'Usaste 3 lojas diferentes na tua lista de compras.', it: 'Hai usato 3 negozi diversi nella tua lista della spesa.', fr: 'Tu as utilisé 3 magasins différents dans ta liste de courses.', de: 'Du hast 3 verschiedene Läden in deiner Einkaufsliste genutzt.' },
 
   // ---------- Escenarios de inversión ----------
   'invscenario.efectivo.label': { es: 'Efectivo (hucha)', en: 'Cash (piggy bank)', pt: 'Dinheiro (mealheiro)', it: 'Contanti (salvadanaio)', fr: 'Liquide (tirelire)', de: 'Bargeld (Sparschwein)' },
