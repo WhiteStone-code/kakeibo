@@ -69,6 +69,18 @@ export default function TransactionForm({ open, onClose }: { open: boolean; onCl
             />
             <span className="text-2xl font-bold text-soft">{currency}</span>
           </div>
+          <div className="flex gap-1.5 mt-2 flex-wrap">
+            {[2, 5, 10, 20, 50].map((quick) => (
+              <button
+                type="button"
+                key={quick}
+                onClick={() => setAmount(String(quick))}
+                className="card-soft px-3 py-1 rounded-full text-xs font-bold text-soft hover:text-accent"
+              >
+                {quick}{currency}
+              </button>
+            ))}
+          </div>
         </div>
 
         {type === 'gasto' && (

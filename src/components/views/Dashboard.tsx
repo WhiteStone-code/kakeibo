@@ -5,6 +5,8 @@ import StatTile from '../StatTile';
 import CategoryDonut from '../charts/CategoryDonut';
 import TrendChart from '../charts/TrendChart';
 import MascotTip from '../MascotTip';
+import DailyAllowanceCard from '../DailyAllowanceCard';
+import BudgetsOverview from '../BudgetsOverview';
 import { getCategory } from '../../data/categories';
 import type { View } from '../../App';
 
@@ -37,6 +39,8 @@ export default function Dashboard({ setView }: { setView: (v: View) => void }) {
         <h1 className="font-display font-extrabold text-2xl capitalize">{monthLabel(month)}</h1>
         <p className="text-soft text-sm">Así va tu dinero este mes</p>
       </div>
+
+      <DailyAllowanceCard />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatTile emoji="💰" label="Ingresos" value={formatMoney(ingresos, currency)} accent="#0ca30c" />
@@ -92,9 +96,12 @@ export default function Dashboard({ setView }: { setView: (v: View) => void }) {
         </div>
       </div>
 
-      <div className="card p-5">
-        <h2 className="font-display font-bold text-base mb-1">📊 Tendencia (6 meses)</h2>
-        <TrendChart />
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="card p-5">
+          <h2 className="font-display font-bold text-base mb-1">📊 Tendencia (6 meses)</h2>
+          <TrendChart />
+        </div>
+        <BudgetsOverview setView={setView} />
       </div>
 
       <div className="card p-5">

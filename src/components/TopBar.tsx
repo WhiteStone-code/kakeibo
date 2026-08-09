@@ -1,15 +1,8 @@
-import { useStore } from '../store/useStore';
-import { getLevelForXp, getNextLevel } from '../data/levels';
+import { useDerivedStats } from '../hooks/useDerivedStats';
 
 export default function TopBar({ onAdd }: { onAdd: () => void }) {
-  const unlocked = useStore((s) => s.unlocked);
-  const getStreak = useStore((s) => s.getStreak);
-  const getXp = useStore((s) => s.getXp);
+  const { streak, xp, level, next, unlockedCount } = useDerivedStats();
 
-  const streak = getStreak();
-  const xp = getXp();
-  const level = getLevelForXp(xp);
-  const next = getNextLevel(xp);
   const progressPct = next
     ? Math.round(((xp - level.minXp) / (next.minXp - level.minXp)) * 100)
     : 100;
@@ -35,7 +28,7 @@ export default function TopBar({ onAdd }: { onAdd: () => void }) {
         </div>
         <div className="hidden sm:flex items-center gap-1.5 card-soft px-3 py-1.5 rounded-full text-sm font-bold">
           <span>🎖️</span>
-          <span>{unlocked.length}</span>
+          <span>{unlockedCount}</span>
         </div>
       </div>
 

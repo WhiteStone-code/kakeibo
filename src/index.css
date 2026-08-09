@@ -158,6 +158,9 @@ html[data-theme="bosque"].dark {
 
 html, body, #root { height: 100%; }
 
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
 body {
   margin: 0;
   background: var(--bg);

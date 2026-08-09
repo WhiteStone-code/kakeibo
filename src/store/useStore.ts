@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
+  Budgets,
+  CategoryId,
   Goal,
   MonthlyReflection,
   Transaction,
@@ -13,11 +15,15 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
+/** Redondea a céntimos para que sumas repetidas no acumulen errores de coma flotante. */
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 interface StoreState {
   transactions: Transaction[];
   goals: Goal[];
   reflections: MonthlyReflection[];
   unlocked: UnlockedAchievement[];
+  budgets: Budgets;
   settings: UserSettings;
   lastCelebratedGoal: string | null;
   lastUnlockedIds: string[];
@@ -31,12 +37,11 @@ interface StoreState {
 
   saveReflection: (r: Omit<MonthlyReflection, 'id' | 'createdAt'>) => void;
 
+  setBudget: (category: CategoryId, amount: number) => void;
+
   updateSettings: (s: Partial<UserSettings>) => void;
   clearLastUnlocked: () => void;
   clearCelebratedGoal: () => void;
-
-  getStreak: () => number;
-  getXp: () => number;
 }
 
 const defaultSettings: UserSettings = {
@@ -55,12 +60,19 @@ export const useStore = create<StoreState>()(
       goals: [],
       reflections: [],
       unlocked: [],
+      budgets: {},
       settings: defaultSettings,
       lastCelebratedGoal: null,
       lastUnlockedIds: [],
 
       addTransaction: (t) => {
-        const tx: Transaction = { ...t, id: uid(), createdAt: Date.now() };
+        const tx: Transaction = {
+          ...t,
+          amount: round2(Math.abs(t.amount)),
+          note: t.note.trim(),
+          id: uid(),
+          createdAt: Date.now(),
+        };
         set((state) => ({ transactions: [tx, ...state.transactions] }));
         recomputeAchievements(set, get);
       },
@@ -70,7 +82,15 @@ export const useStore = create<StoreState>()(
       },
 
       addGoal: (g) => {
-        const goal: Goal = { ...g, id: uid(), createdAt: Date.now(), savedAmount: 0, achieved: false };
+        const goal: Goal = {
+          ...g,
+          name: g.name.trim(),
+          targetAmount: round2(Math.abs(g.targetAmount)),
+          id: uid(),
+          createdAt: Date.now(),
+          savedAmount: 0,
+          achieved: false,
+        };
         set((state) => ({ goals: [goal, ...state.goals] }));
         recomputeAchievements(set, get);
       },
@@ -83,7 +103,7 @@ export const useStore = create<StoreState>()(
         set((state) => ({
           goals: state.goals.map((g) => {
             if (g.id !== goalId) return g;
-            const newAmount = Math.max(0, g.savedAmount + amount);
+            const newAmount = round2(Math.max(0, g.savedAmount + amount));
             const achieved = newAmount >= g.targetAmount;
             if (achieved && !g.achieved) {
               setTimeout(() => set({ lastCelebratedGoal: g.id }), 0);
@@ -104,22 +124,31 @@ export const useStore = create<StoreState>()(
         }));
       },
 
+      setBudget: (category, amount) => {
+        set((state) => {
+          const next = { ...state.budgets };
+          if (!amount || amount <= 0) {
+            delete next[category];
+          } else {
+            next[category] = round2(amount);
+          }
+          return { budgets: next };
+        });
+      },
+
       updateSettings: (s) => {
         set((state) => ({ settings: { ...state.settings, ...s } }));
       },
 
       clearLastUnlocked: () => set({ lastUnlockedIds: [] }),
       clearCelebratedGoal: () => set({ lastCelebratedGoal: null }),
-
-      getStreak: () => computeStreak(get().transactions),
-
-      getXp: () => computeXp(get().transactions, get().unlocked),
     }),
-    { name: 'kakeibo-storage' }
+    { name: 'kakeibo-storage', version: 1 }
   )
 );
 
-function computeStreak(transactions: Transaction[]): number {
+/** Racha de días consecutivos con al menos un movimiento registrado (incluye hoy o ayer). */
+export function computeStreak(transactions: Transaction[]): number {
   const days = new Set(transactions.map((t) => t.date));
   let streak = 0;
   const cursor = new Date();
@@ -127,20 +156,14 @@ function computeStreak(transactions: Transaction[]): number {
   if (!days.has(todayIso())) {
     cursor.setDate(cursor.getDate() - 1);
   }
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const iso = cursor.toISOString().slice(0, 10);
-    if (days.has(iso)) {
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    } else {
-      break;
-    }
+  while (days.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 }
 
-function computeXp(transactions: Transaction[], unlocked: UnlockedAchievement[]): number {
+export function computeXp(transactions: Transaction[], unlocked: UnlockedAchievement[]): number {
   const days = new Set(transactions.map((t) => t.date)).size;
   return days * 10 + transactions.length * 5 + unlocked.length * 50;
 }

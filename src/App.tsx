@@ -77,40 +77,45 @@ export default function App() {
       <MobileNav view={view} setView={setView} />
       <TransactionForm open={formOpen} onClose={() => setFormOpen(false)} />
 
-      <AnimatePresence>
-        {celebratedGoal && (
-          <motion.div
-            initial={{ opacity: 0, y: -30, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -30, x: '-50%' }}
-            className="fixed top-5 left-1/2 z-[60] card px-5 py-4 shadow-xl flex items-center gap-3"
-          >
-            <span className="text-3xl">{celebratedGoal.emoji}</span>
-            <div>
-              <p className="font-display font-bold">¡Objetivo cumplido! 🎉</p>
-              <p className="text-sm text-soft">{celebratedGoal.name}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Cola de notificaciones de celebración: en la esquina superior derecha para
+          no tapar nunca la racha/nivel de la barra superior (a la izquierda). */}
+      <div className="fixed top-20 right-4 z-[60] flex flex-col gap-2.5 items-end pointer-events-none">
+        <AnimatePresence>
+          {celebratedGoal && (
+            <motion.div
+              key="goal-toast"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="card px-5 py-4 shadow-xl flex items-center gap-3 max-w-xs pointer-events-auto"
+            >
+              <span className="text-3xl">{celebratedGoal.emoji}</span>
+              <div>
+                <p className="font-display font-bold">¡Objetivo cumplido! 🎉</p>
+                <p className="text-sm text-soft">{celebratedGoal.name}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      <AnimatePresence>
-        {newAchievements.map((a, i) => (
-          <motion.div
-            key={a.id}
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: i * 76, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className="fixed top-5 left-1/2 z-[60] card px-5 py-3 shadow-xl flex items-center gap-3"
-          >
-            <span className="text-3xl">{a.emoji}</span>
-            <div>
-              <p className="font-display font-bold text-sm">¡Logro desbloqueado!</p>
-              <p className="text-sm text-soft">{a.title}</p>
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+        <AnimatePresence>
+          {newAchievements.map((a) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              className="card px-5 py-3 shadow-xl flex items-center gap-3 max-w-xs pointer-events-auto"
+            >
+              <span className="text-3xl">{a.emoji}</span>
+              <div>
+                <p className="font-display font-bold text-sm">¡Logro desbloqueado!</p>
+                <p className="text-sm text-soft">{a.title}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -1,15 +1,12 @@
 import { useStore } from '../../store/useStore';
 import { ACHIEVEMENTS } from '../../data/achievements';
-import { LEVELS, getLevelForXp, getNextLevel } from '../../data/levels';
+import { LEVELS } from '../../data/levels';
+import { useDerivedStats } from '../../hooks/useDerivedStats';
 
 export default function AchievementsView() {
   const unlocked = useStore((s) => s.unlocked);
-  const getXp = useStore((s) => s.getXp);
-  const getStreak = useStore((s) => s.getStreak);
+  const { xp, streak, level, next } = useDerivedStats();
 
-  const xp = getXp();
-  const level = getLevelForXp(xp);
-  const next = getNextLevel(xp);
   const unlockedIds = new Set(unlocked.map((u) => u.id));
 
   return (
@@ -24,7 +21,7 @@ export default function AchievementsView() {
         <div className="flex-1 w-full">
           <p className="font-display font-bold text-lg">{level.title}</p>
           <p className="text-xs text-soft mb-2">
-            {xp} XP · racha actual 🔥 {getStreak()} días
+            {xp} XP · racha actual 🔥 {streak} días
           </p>
           {next ? (
             <>

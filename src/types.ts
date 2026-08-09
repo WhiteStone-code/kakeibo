@@ -93,6 +93,8 @@ export interface UnlockedAchievement {
   unlockedAt: number;
 }
 
+export type Budgets = Partial<Record<CategoryId, number>>;
+
 export interface UserSettings {
   theme: ThemeId;
   mode: ColorMode;

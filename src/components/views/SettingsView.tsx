@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { THEMES } from '../../data/themes';
+import { EXPENSE_CATEGORIES } from '../../data/categories';
 import type { ThemeId } from '../../types';
 
 const CURRENCIES = ['€', '$', '£', 'MXN$', 'ARS$', 'COL$'];
@@ -8,6 +9,8 @@ const CURRENCIES = ['€', '$', '£', 'MXN$', 'ARS$', 'COL$'];
 export default function SettingsView() {
   const settings = useStore((s) => s.settings);
   const updateSettings = useStore((s) => s.updateSettings);
+  const budgets = useStore((s) => s.budgets);
+  const setBudget = useStore((s) => s.setBudget);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportData = () => {
@@ -136,6 +139,31 @@ export default function SettingsView() {
                 ))}
               </div>
             </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card p-5 flex flex-col gap-3">
+        <label className="text-xs font-bold text-soft uppercase tracking-wide">
+          Presupuestos por categoría
+        </label>
+        <p className="text-xs text-soft -mt-1">
+          Ponle un límite mensual a las categorías que quieras vigilar. Déjalo en blanco para no
+          controlar esa categoría.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-2.5">
+          {EXPENSE_CATEGORIES.map((cat) => (
+            <div key={cat.id} className="flex items-center gap-2 card-soft px-3 py-2 rounded-xl">
+              <span className="text-lg shrink-0">{cat.emoji}</span>
+              <span className="text-sm font-semibold flex-1 truncate">{cat.label}</span>
+              <input
+                inputMode="decimal"
+                defaultValue={budgets[cat.id] ?? ''}
+                onBlur={(e) => setBudget(cat.id, parseFloat(e.target.value.replace(',', '.')) || 0)}
+                placeholder="Sin límite"
+                className="w-24 px-2 py-1.5 rounded-lg bg-surface border border-theme outline-none focus:border-accent text-sm text-right font-bold"
+              />
+            </div>
           ))}
         </div>
       </div>
