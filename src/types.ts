@@ -2,6 +2,11 @@
 
 export type TransactionType = 'gasto' | 'ingreso';
 
+// Las categorías por defecto usan estos ids fijos; las categorías creadas
+// por el usuario llevan un id generado (ver store: `custom-xxxxx`). Por eso
+// `CategoryId` ya no es un tipo cerrado — es una guía de los ids de fábrica,
+// pero `Transaction.category` acepta cualquier string para soportar las
+// categorías personalizadas.
 export type CategoryId =
   | 'comida'
   | 'compras'
@@ -21,20 +26,22 @@ export type CategoryId =
 export type KakeiboGroup = 'supervivencia' | 'ocio' | 'cultura' | 'extra' | 'ingreso';
 
 export interface Category {
-  id: CategoryId;
+  id: string;
   label: string;
   emoji: string;
   /** Colores validados (contraste + distinguibilidad CVD) para modo claro y oscuro. */
   color: string;
   colorDark: string;
   group: KakeiboGroup;
+  /** true en las categorías creadas por el usuario (se pueden editar/borrar). */
+  custom?: boolean;
 }
 
 export interface Transaction {
   id: string;
   type: TransactionType;
   amount: number;
-  category: CategoryId;
+  category: string;
   note: string;
   date: string; // ISO yyyy-MM-dd
   createdAt: number;
@@ -93,7 +100,7 @@ export interface UnlockedAchievement {
   unlockedAt: number;
 }
 
-export type Budgets = Partial<Record<CategoryId, number>>;
+export type Budgets = Record<string, number>;
 
 export interface UserSettings {
   theme: ThemeId;
@@ -102,4 +109,6 @@ export interface UserSettings {
   userName: string;
   monthlyIncomeTarget: number;
   onboarded: boolean;
+  /** Última versión cuyo "Novedades" ya vio el usuario (ver data/changelog.ts). */
+  lastSeenVersion: string;
 }

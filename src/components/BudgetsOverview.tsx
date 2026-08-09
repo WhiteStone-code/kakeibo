@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { getCategory } from '../data/categories';
+import { useAllCategories } from '../hooks/useCategories';
 import { formatMoney, currentMonthKey } from '../utils/format';
 import type { View } from '../App';
 
@@ -16,6 +17,7 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
   const transactions = useStore((s) => s.transactions);
   const budgets = useStore((s) => s.budgets);
   const currency = useStore((s) => s.settings.currency);
+  const allCategories = useAllCategories();
   const month = currentMonthKey();
 
   const rows = useMemo(() => {
@@ -30,10 +32,10 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
         const spent = spentByCategory.get(catId) ?? 0;
         const pct = Math.min(100, (spent / budget) * 100);
         const status: keyof typeof STATUS = spent >= budget ? 'critical' : pct >= 80 ? 'warning' : 'good';
-        return { cat: getCategory(catId), spent, budget, pct, status };
+        return { cat: getCategory(catId, allCategories), spent, budget, pct, status };
       })
       .sort((a, b) => b.pct - a.pct);
-  }, [transactions, budgets, month]);
+  }, [transactions, budgets, month, allCategories]);
 
   if (rows.length === 0) {
     return (

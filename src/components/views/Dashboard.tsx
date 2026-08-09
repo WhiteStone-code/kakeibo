@@ -8,12 +8,14 @@ import MascotTip from '../MascotTip';
 import DailyAllowanceCard from '../DailyAllowanceCard';
 import BudgetsOverview from '../BudgetsOverview';
 import { getCategory } from '../../data/categories';
+import { useAllCategories } from '../../hooks/useCategories';
 import type { View } from '../../App';
 
 export default function Dashboard({ setView }: { setView: (v: View) => void }) {
   const transactions = useStore((s) => s.transactions);
   const goals = useStore((s) => s.goals);
   const currency = useStore((s) => s.settings.currency);
+  const allCategories = useAllCategories();
   const month = currentMonthKey();
 
   const { ingresos, gastos, balance, recent } = useMemo(() => {
@@ -118,7 +120,7 @@ export default function Dashboard({ setView }: { setView: (v: View) => void }) {
         ) : (
           <ul className="flex flex-col divide-y divide-theme">
             {recent.map((t) => {
-              const cat = getCategory(t.category);
+              const cat = getCategory(t.category, allCategories);
               return (
                 <li key={t.id} className="flex items-center gap-3 py-2.5">
                   <span className="text-xl">{cat.emoji}</span>

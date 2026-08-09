@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { THEMES } from '../../data/themes';
-import { EXPENSE_CATEGORIES } from '../../data/categories';
+import { useExpenseCategories } from '../../hooks/useCategories';
+import CategoryManager from '../CategoryManager';
 import type { ThemeId } from '../../types';
 
 const CURRENCIES = ['€', '$', '£', 'MXN$', 'ARS$', 'COL$'];
@@ -11,6 +12,7 @@ export default function SettingsView() {
   const updateSettings = useStore((s) => s.updateSettings);
   const budgets = useStore((s) => s.budgets);
   const setBudget = useStore((s) => s.setBudget);
+  const expenseCategories = useExpenseCategories();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const exportData = () => {
@@ -21,6 +23,8 @@ export default function SettingsView() {
         goals: state.goals,
         reflections: state.reflections,
         unlocked: state.unlocked,
+        budgets: state.budgets,
+        customCategories: state.customCategories,
         settings: state.settings,
       },
       null,
@@ -143,6 +147,8 @@ export default function SettingsView() {
         </div>
       </div>
 
+      <CategoryManager />
+
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">
           Presupuestos por categoría
@@ -152,7 +158,7 @@ export default function SettingsView() {
           controlar esa categoría.
         </p>
         <div className="grid sm:grid-cols-2 gap-2.5">
-          {EXPENSE_CATEGORIES.map((cat) => (
+          {expenseCategories.map((cat) => (
             <div key={cat.id} className="flex items-center gap-2 card-soft px-3 py-2 rounded-xl">
               <span className="text-lg shrink-0">{cat.emoji}</span>
               <span className="text-sm font-semibold flex-1 truncate">{cat.label}</span>

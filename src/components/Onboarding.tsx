@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { THEMES } from '../data/themes';
+import { APP_VERSION } from '../data/changelog';
 import type { ThemeId } from '../types';
 
 export default function Onboarding() {
@@ -11,7 +12,9 @@ export default function Onboarding() {
   const [theme, setTheme] = useState<ThemeId>('zen');
 
   const finish = () => {
-    updateSettings({ userName: name.trim(), theme, onboarded: true });
+    // lastSeenVersion se marca ya aquí: quien acaba de conocer la app no
+    // necesita ver el historial de "novedades" de versiones anteriores.
+    updateSettings({ userName: name.trim(), theme, onboarded: true, lastSeenVersion: APP_VERSION });
   };
 
   return (

@@ -14,7 +14,10 @@ import GoalsView from './components/views/GoalsView';
 import AchievementsView from './components/views/AchievementsView';
 import ReflectionView from './components/views/ReflectionView';
 import SettingsView from './components/views/SettingsView';
+import WhatsNewModal from './components/WhatsNewModal';
 import { ACHIEVEMENTS } from './data/achievements';
+import { APP_VERSION } from './data/changelog';
+import type { Transaction } from './types';
 
 export type View =
   | 'dashboard'
@@ -28,6 +31,8 @@ export default function App() {
   useApplyTheme();
 
   const onboarded = useStore((s) => s.settings.onboarded);
+  const lastSeenVersion = useStore((s) => s.settings.lastSeenVersion);
+  const updateSettings = useStore((s) => s.updateSettings);
   const lastCelebratedGoal = useStore((s) => s.lastCelebratedGoal);
   const lastUnlockedIds = useStore((s) => s.lastUnlockedIds);
   const clearCelebratedGoal = useStore((s) => s.clearCelebratedGoal);
@@ -36,6 +41,35 @@ export default function App() {
 
   const [view, setView] = useState<View>('dashboard');
   const [formOpen, setFormOpen] = useState(false);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+
+  const openNewTransaction = () => {
+    setEditingTx(null);
+    setFormOpen(true);
+  };
+  const openEditTransaction = (tx: Transaction) => {
+    setEditingTx(tx);
+    setFormOpen(true);
+  };
+  const closeTransactionForm = () => {
+    setFormOpen(false);
+    setEditingTx(null);
+  };
+
+  // Si hay una versión nueva desde la última vez que abrió la app, se lo
+  // enseñamos automáticamente una vez (y solo una vez) al entrar.
+  useEffect(() => {
+    if (onboarded && lastSeenVersion !== APP_VERSION) {
+      setWhatsNewOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboarded]);
+
+  const closeWhatsNew = () => {
+    setWhatsNewOpen(false);
+    updateSettings({ lastSeenVersion: APP_VERSION });
+  };
 
   // Confetti al cumplir un objetivo
   useEffect(() => {
@@ -60,13 +94,13 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar view={view} setView={setView} />
+      <Sidebar view={view} setView={setView} onShowWhatsNew={() => setWhatsNewOpen(true)} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <TopBar onAdd={() => setFormOpen(true)} />
+        <TopBar onAdd={openNewTransaction} />
         <main className="flex-1 px-4 md:px-8 py-6 max-w-6xl w-full mx-auto">
           {view === 'dashboard' && <Dashboard setView={setView} />}
-          {view === 'transacciones' && <TransactionsView />}
+          {view === 'transacciones' && <TransactionsView onEdit={openEditTransaction} />}
           {view === 'objetivos' && <GoalsView />}
           {view === 'logros' && <AchievementsView />}
           {view === 'reflexion' && <ReflectionView />}
@@ -75,7 +109,8 @@ export default function App() {
       </div>
 
       <MobileNav view={view} setView={setView} />
-      <TransactionForm open={formOpen} onClose={() => setFormOpen(false)} />
+      <TransactionForm open={formOpen} onClose={closeTransactionForm} editing={editingTx} />
+      <WhatsNewModal open={whatsNewOpen} onClose={closeWhatsNew} />
 
       {/* Cola de notificaciones de celebración: en la esquina superior derecha para
           no tapar nunca la racha/nivel de la barra superior (a la izquierda). */}

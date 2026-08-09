@@ -1,17 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from './Modal';
-import { EXPENSE_CATEGORIES, categoryColor } from '../data/categories';
+import { categoryColor } from '../data/categories';
+import { useExpenseCategories } from '../hooks/useCategories';
 import { useStore } from '../store/useStore';
-import type { CategoryId, TransactionType } from '../types';
+import type { Transaction, TransactionType } from '../types';
 
-export default function TransactionForm({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function TransactionForm({
+  open,
+  onClose,
+  editing,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Si se pasa, el formulario edita este movimiento en vez de crear uno nuevo. */
+  editing?: Transaction | null;
+}) {
   const addTransaction = useStore((s) => s.addTransaction);
+  const updateTransaction = useStore((s) => s.updateTransaction);
   const currency = useStore((s) => s.settings.currency);
   const mode = useStore((s) => s.settings.mode);
+  const expenseCategories = useExpenseCategories();
 
   const [type, setType] = useState<TransactionType>('gasto');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<CategoryId>('comida');
+  const [category, setCategory] = useState('comida');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
 
@@ -23,23 +35,42 @@ export default function TransactionForm({ open, onClose }: { open: boolean; onCl
     setDate(new Date().toISOString().slice(0, 10));
   };
 
+  // Al abrir para editar, precarga los datos del movimiento existente.
+  useEffect(() => {
+    if (open && editing) {
+      setType(editing.type);
+      setAmount(String(editing.amount));
+      setCategory(editing.category);
+      setNote(editing.note);
+      setDate(editing.date);
+    } else if (open && !editing) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editing]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = parseFloat(amount.replace(',', '.'));
     if (!value || value <= 0) return;
-    addTransaction({
+    const payload = {
       type,
       amount: value,
       category: type === 'ingreso' ? 'ingresos' : category,
       note: note.trim(),
       date,
-    });
+    };
+    if (editing) {
+      updateTransaction(editing.id, payload);
+    } else {
+      addTransaction(payload);
+    }
     reset();
     onClose();
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Nuevo movimiento">
+    <Modal open={open} onClose={onClose} title={editing ? 'Editar movimiento' : 'Nuevo movimiento'}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex gap-2 p-1 bg-app-soft rounded-2xl">
           {(['gasto', 'ingreso'] as TransactionType[]).map((t) => (
@@ -87,22 +118,22 @@ export default function TransactionForm({ open, onClose }: { open: boolean; onCl
           <div>
             <label className="text-xs font-bold text-soft uppercase tracking-wide">Categoría</label>
             <div className="grid grid-cols-4 gap-2 mt-2">
-              {EXPENSE_CATEGORIES.map((cat) => {
+              {expenseCategories.map((cat) => {
                 const c = categoryColor(cat, mode);
                 return (
-                <button
-                  type="button"
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className="flex flex-col items-center gap-1 py-2.5 rounded-2xl border-2 transition-all text-xs font-semibold"
-                  style={{
-                    borderColor: category === cat.id ? c : 'var(--border)',
-                    background: category === cat.id ? `${c}22` : 'var(--surface-2)',
-                  }}
-                >
-                  <span className="text-xl">{cat.emoji}</span>
-                  <span className="leading-tight text-center">{cat.label}</span>
-                </button>
+                  <button
+                    type="button"
+                    key={cat.id}
+                    onClick={() => setCategory(cat.id)}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-2xl border-2 transition-all text-xs font-semibold"
+                    style={{
+                      borderColor: category === cat.id ? c : 'var(--border)',
+                      background: category === cat.id ? `${c}22` : 'var(--surface-2)',
+                    }}
+                  >
+                    <span className="text-xl">{cat.emoji}</span>
+                    <span className="leading-tight text-center">{cat.label}</span>
+                  </button>
                 );
               })}
             </div>
@@ -132,7 +163,7 @@ export default function TransactionForm({ open, onClose }: { open: boolean; onCl
         </div>
 
         <button type="submit" className="btn-accent font-bold py-3 rounded-2xl text-sm shadow-md">
-          Guardar movimiento
+          {editing ? 'Guardar cambios' : 'Guardar movimiento'}
         </button>
       </form>
     </Modal>

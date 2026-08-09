@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
   Budgets,
-  CategoryId,
+  Category,
   Goal,
   MonthlyReflection,
   Transaction,
@@ -10,6 +10,7 @@ import type {
   UserSettings,
 } from '../types';
 import { evaluateAchievements } from '../data/achievements';
+import { CUSTOM_CATEGORY_COLORS } from '../data/categories';
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
@@ -24,12 +25,14 @@ interface StoreState {
   reflections: MonthlyReflection[];
   unlocked: UnlockedAchievement[];
   budgets: Budgets;
+  customCategories: Category[];
   settings: UserSettings;
   lastCelebratedGoal: string | null;
   lastUnlockedIds: string[];
 
   addTransaction: (t: Omit<Transaction, 'id' | 'createdAt'>) => void;
   removeTransaction: (id: string) => void;
+  updateTransaction: (id: string, patch: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => void;
 
   addGoal: (g: Omit<Goal, 'id' | 'createdAt' | 'savedAmount' | 'achieved'>) => void;
   removeGoal: (id: string) => void;
@@ -37,7 +40,11 @@ interface StoreState {
 
   saveReflection: (r: Omit<MonthlyReflection, 'id' | 'createdAt'>) => void;
 
-  setBudget: (category: CategoryId, amount: number) => void;
+  setBudget: (category: string, amount: number) => void;
+
+  addCustomCategory: (c: { label: string; emoji: string }) => void;
+  updateCustomCategory: (id: string, patch: { label?: string; emoji?: string }) => void;
+  removeCustomCategory: (id: string) => void;
 
   updateSettings: (s: Partial<UserSettings>) => void;
   clearLastUnlocked: () => void;
@@ -51,6 +58,7 @@ const defaultSettings: UserSettings = {
   userName: '',
   monthlyIncomeTarget: 0,
   onboarded: false,
+  lastSeenVersion: '',
 };
 
 export const useStore = create<StoreState>()(
@@ -61,6 +69,7 @@ export const useStore = create<StoreState>()(
       reflections: [],
       unlocked: [],
       budgets: {},
+      customCategories: [],
       settings: defaultSettings,
       lastCelebratedGoal: null,
       lastUnlockedIds: [],
@@ -79,6 +88,21 @@ export const useStore = create<StoreState>()(
 
       removeTransaction: (id) => {
         set((state) => ({ transactions: state.transactions.filter((t) => t.id !== id) }));
+      },
+
+      updateTransaction: (id, patch) => {
+        set((state) => ({
+          transactions: state.transactions.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  ...patch,
+                  amount: patch.amount !== undefined ? round2(Math.abs(patch.amount)) : t.amount,
+                  note: patch.note !== undefined ? patch.note.trim() : t.note,
+                }
+              : t
+          ),
+        }));
       },
 
       addGoal: (g) => {
@@ -134,6 +158,40 @@ export const useStore = create<StoreState>()(
           }
           return { budgets: next };
         });
+      },
+
+      addCustomCategory: (c) => {
+        set((state) => {
+          const color = CUSTOM_CATEGORY_COLORS[state.customCategories.length % CUSTOM_CATEGORY_COLORS.length];
+          const category: Category = {
+            id: `custom-${uid()}`,
+            label: c.label.trim() || 'Sin nombre',
+            emoji: c.emoji || '🏷️',
+            color,
+            colorDark: color,
+            group: 'extra',
+            custom: true,
+          };
+          return { customCategories: [...state.customCategories, category] };
+        });
+      },
+
+      updateCustomCategory: (id, patch) => {
+        set((state) => ({
+          customCategories: state.customCategories.map((c) =>
+            c.id === id
+              ? {
+                  ...c,
+                  ...(patch.label !== undefined ? { label: patch.label.trim() || c.label } : {}),
+                  ...(patch.emoji !== undefined ? { emoji: patch.emoji || c.emoji } : {}),
+                }
+              : c
+          ),
+        }));
+      },
+
+      removeCustomCategory: (id) => {
+        set((state) => ({ customCategories: state.customCategories.filter((c) => c.id !== id) }));
       },
 
       updateSettings: (s) => {

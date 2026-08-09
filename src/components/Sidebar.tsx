@@ -1,6 +1,7 @@
 import type { View } from '../App';
 import { getThemeMeta } from '../data/themes';
 import { useStore } from '../store/useStore';
+import { APP_VERSION } from '../data/changelog';
 
 interface NavItem {
   id: View;
@@ -20,9 +21,11 @@ const NAV_ITEMS: NavItem[] = [
 export default function Sidebar({
   view,
   setView,
+  onShowWhatsNew,
 }: {
   view: View;
   setView: (v: View) => void;
+  onShowWhatsNew: () => void;
 }) {
   const theme = useStore((s) => s.settings.theme);
   const userName = useStore((s) => s.settings.userName);
@@ -60,12 +63,20 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="mt-auto card-soft p-4 text-xs text-soft leading-relaxed">
-        <p className="font-semibold text-accent mb-1">💡 ¿Sabías qué?</p>
-        <p>
-          "Kakeibo" (家計簿) significa "libro de cuentas del hogar". Se usa en Japón
-          desde 1904 para ahorrar con conciencia, no con privación.
-        </p>
+      <div className="mt-auto flex flex-col gap-3">
+        <div className="card-soft p-4 text-xs text-soft leading-relaxed">
+          <p className="font-semibold text-accent mb-1">💡 ¿Sabías qué?</p>
+          <p>
+            "Kakeibo" (家計簿) significa "libro de cuentas del hogar". Se usa en Japón
+            desde 1904 para ahorrar con conciencia, no con privación.
+          </p>
+        </div>
+        <button
+          onClick={onShowWhatsNew}
+          className="text-[11px] font-bold text-soft hover:text-accent text-center py-1"
+        >
+          🆕 v{APP_VERSION} · Novedades
+        </button>
       </div>
     </aside>
   );

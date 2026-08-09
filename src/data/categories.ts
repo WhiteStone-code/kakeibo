@@ -22,10 +22,31 @@ export const CATEGORIES: Category[] = [
   { id: 'ingresos', label: 'Ingresos', emoji: '💰', color: '#0ca30c', colorDark: '#3fc93f', group: 'ingreso' },
 ];
 
-export const getCategory = (id: string): Category =>
-  CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1];
+const FALLBACK_CATEGORY = CATEGORIES.find((c) => c.id === 'otros')!;
+
+/** Busca una categoría por id entre las de fábrica y, si se pasan, las
+ * personalizadas del usuario. Si no la encuentra (p. ej. se borró una
+ * categoría personalizada que aún tiene movimientos antiguos), cae en
+ * "Otros" en vez de desaparecer. */
+export const getCategory = (id: string, custom: Category[] = []): Category =>
+  CATEGORIES.find((c) => c.id === id) ?? custom.find((c) => c.id === id) ?? FALLBACK_CATEGORY;
 
 export const EXPENSE_CATEGORIES = CATEGORIES.filter((c) => c.id !== 'ingresos');
+
+// Colores de reserva para categorías personalizadas — distintos de los 13 de
+// fábrica para que no se confundan al verse juntos en el mismo gráfico.
+export const CUSTOM_CATEGORY_COLORS = [
+  '#c2410c', '#0891b2', '#7c3aed', '#be185d', '#65a30d',
+  '#0d9488', '#b45309', '#4338ca', '#dc2626', '#059669',
+];
+
+// Emojis sugeridos al crear una categoría (además puede escribir/pegar
+// cualquier otro emoji en el campo de texto).
+export const CATEGORY_EMOJI_CHOICES = [
+  '🐾', '💇', '🧴', '🏋️', '🎨', '🎵', '📱', '🔧', '🌱', '🚬',
+  '☕', '🍺', '🎂', '💻', '🖥️', '🧸', '🎁', '⛽', '🧾', '🏥',
+  '✈️', '🏕️', '🛠️', '📦', '💅', '🧹', '🐶', '👶', '⚽', '🎮',
+];
 
 export const KAKEIBO_GROUPS: Record<string, { label: string; emoji: string; desc: string }> = {
   supervivencia: {

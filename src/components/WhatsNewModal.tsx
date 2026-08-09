@@ -1,0 +1,43 @@
+import Modal from './Modal';
+import { CHANGELOG, APP_VERSION } from '../data/changelog';
+
+export default function WhatsNewModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Modal open={open} onClose={onClose} title="🆕 Novedades">
+      <div className="flex flex-col gap-5 -mt-1">
+        <p className="text-sm text-soft -mt-2">
+          Así va evolucionando Kakeibo, versión a versión.
+        </p>
+        {CHANGELOG.map((entry) => (
+          <div key={entry.version} className="flex gap-3">
+            <div className="flex flex-col items-center pt-1">
+              <span
+                className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                  entry.version === APP_VERSION ? 'btn-accent' : 'card-soft text-soft'
+                }`}
+              >
+                v{entry.version}
+              </span>
+              <span className="w-px flex-1 bg-theme border-l border-theme mt-1.5" />
+            </div>
+            <div className="pb-1 min-w-0">
+              <p className="font-display font-bold text-sm">{entry.title}</p>
+              <p className="text-xs text-soft mb-1.5">{entry.date}</p>
+              <ul className="flex flex-col gap-1">
+                {entry.items.map((item, i) => (
+                  <li key={i} className="text-sm flex gap-1.5">
+                    <span className="text-accent shrink-0">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+        <button onClick={onClose} className="btn-accent font-bold py-2.5 rounded-2xl text-sm">
+          Genial, ¡a probarlo!
+        </button>
+      </div>
+    </Modal>
+  );
+}

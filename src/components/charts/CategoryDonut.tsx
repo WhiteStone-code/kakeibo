@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useStore } from '../../store/useStore';
 import { getCategory, categoryColor } from '../../data/categories';
+import { useAllCategories } from '../../hooks/useCategories';
 import { formatMoney } from '../../utils/format';
 import { currentMonthKey } from '../../utils/format';
 
@@ -18,6 +19,7 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
   const transactions = useStore((s) => s.transactions);
   const mode = useStore((s) => s.settings.mode);
   const currency = useStore((s) => s.settings.currency);
+  const allCategories = useAllCategories();
   const month = monthKey ?? currentMonthKey();
 
   const { slices, total } = useMemo(() => {
@@ -30,7 +32,7 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
     }
     const slices: Slice[] = Array.from(byCat.entries())
       .map(([id, value]) => {
-        const cat = getCategory(id);
+        const cat = getCategory(id, allCategories);
         return {
           id,
           label: cat.label,
@@ -42,7 +44,7 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
       })
       .sort((a, b) => b.value - a.value);
     return { slices, total };
-  }, [transactions, month, mode]);
+  }, [transactions, month, mode, allCategories]);
 
   if (slices.length === 0) {
     return (

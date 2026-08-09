@@ -1,12 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
+import { useAllCategories } from '../../hooks/useCategories';
 import { getCategory } from '../../data/categories';
 import { formatMoney } from '../../utils/format';
+import type { Transaction } from '../../types';
 
-export default function TransactionsView() {
+export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction) => void }) {
   const transactions = useStore((s) => s.transactions);
   const removeTransaction = useStore((s) => s.removeTransaction);
   const currency = useStore((s) => s.settings.currency);
+  const allCategories = useAllCategories();
   const [filter, setFilter] = useState<'todos' | 'gasto' | 'ingreso'>('todos');
 
   const sorted = useMemo(() => {
@@ -29,7 +32,9 @@ export default function TransactionsView() {
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       <div>
         <h1 className="font-display font-extrabold text-2xl">Movimientos</h1>
-        <p className="text-soft text-sm">Todo lo que has registrado hasta ahora</p>
+        <p className="text-soft text-sm">
+          Todo lo que has registrado hasta ahora · toca uno para editarlo
+        </p>
       </div>
 
       <div className="flex gap-2">
@@ -57,14 +62,19 @@ export default function TransactionsView() {
             <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{date}</p>
             <ul className="flex flex-col divide-y divide-theme">
               {items.map((t) => {
-                const cat = getCategory(t.category);
+                const cat = getCategory(t.category, allCategories);
                 return (
                   <li key={t.id} className="flex items-center gap-3 py-2.5 group">
-                    <span className="text-xl">{cat.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm truncate">{t.note || cat.label}</p>
-                      <p className="text-xs text-soft">{cat.label}</p>
-                    </div>
+                    <button
+                      onClick={() => onEdit(t)}
+                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                    >
+                      <span className="text-xl">{cat.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-sm truncate">{t.note || cat.label}</p>
+                        <p className="text-xs text-soft">{cat.label}</p>
+                      </div>
+                    </button>
                     <span
                       className={`font-bold tabular-nums text-sm ${
                         t.type === 'ingreso' ? 'text-[#0ca30c]' : ''
