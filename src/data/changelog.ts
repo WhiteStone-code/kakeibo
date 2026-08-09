@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.4.0';
+export const APP_VERSION = '0.4.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,15 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.4.1',
+    date: '9 ago 2026',
+    title: 'Muchos más iconos',
+    items: [
+      '82 iconos organizados por temas (comida, mascotas, deporte, hogar, viajes...) para tus categorías y objetivos',
+      'Buscador de iconos por palabra clave (ej: "perro", "gimnasio")',
+    ],
+  },
   {
     version: '0.4.0',
     date: '9 ago 2026',
