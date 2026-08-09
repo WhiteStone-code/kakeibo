@@ -34,6 +34,7 @@ interface StoreState {
   shoppingBudget: number;
   customStores: string[];
   customOccasions: string[];
+  frequentItemNames: string[];
   shoppingCheckedCount: number;
   recurringItems: RecurringItem[];
   settings: UserSettings;
@@ -117,6 +118,7 @@ export const useStore = create<StoreState>()(
       shoppingBudget: 0,
       customStores: [],
       customOccasions: [],
+      frequentItemNames: [],
       shoppingCheckedCount: 0,
       recurringItems: [],
       settings: defaultSettings,
@@ -257,15 +259,25 @@ export const useStore = create<StoreState>()(
           checked: false,
           createdAt: Date.now(),
         };
-        set((state) => ({
-          shoppingList: [...state.shoppingList, newItem],
-          customStores:
-            store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
-          customOccasions:
-            occasion && !state.customOccasions.includes(occasion)
-              ? [...state.customOccasions, occasion]
-              : state.customOccasions,
-        }));
+        set((state) => {
+          // Autocompletado de productos frecuentes (tipo Bring!/AnyList): el
+          // más reciente sube arriba, tope de 40 para que no crezca sin fin.
+          const nameLower = newItem.name.toLowerCase();
+          const frequentItemNames = [
+            newItem.name,
+            ...state.frequentItemNames.filter((n) => n.toLowerCase() !== nameLower),
+          ].slice(0, 40);
+          return {
+            shoppingList: [...state.shoppingList, newItem],
+            customStores:
+              store && !state.customStores.includes(store) ? [...state.customStores, store] : state.customStores,
+            customOccasions:
+              occasion && !state.customOccasions.includes(occasion)
+                ? [...state.customOccasions, occasion]
+                : state.customOccasions,
+            frequentItemNames,
+          };
+        });
       },
 
       toggleShoppingItem: (id) => {

@@ -35,6 +35,8 @@ export default function SettingsView() {
         shoppingList: state.shoppingList,
         shoppingBudget: state.shoppingBudget,
         customStores: state.customStores,
+        customOccasions: state.customOccasions,
+        frequentItemNames: state.frequentItemNames,
         recurringItems: state.recurringItems,
         settings: state.settings,
       },
