@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { CATEGORY_EMOJI_CHOICES, categoryColor } from '../data/categories';
+import { categoryColor } from '../data/categories';
+import { ALL_EMOJIS } from '../data/emojiLibrary';
+import EmojiPicker from './EmojiPicker';
+
+const randomEmoji = () => ALL_EMOJIS[Math.floor(Math.random() * ALL_EMOJIS.length)];
 
 /** Alta, edición y borrado de categorías propias de movimiento. */
 export default function CategoryManager() {
@@ -12,7 +16,7 @@ export default function CategoryManager() {
 
   const [adding, setAdding] = useState(false);
   const [label, setLabel] = useState('');
-  const [emoji, setEmoji] = useState(CATEGORY_EMOJI_CHOICES[0]);
+  const [emoji, setEmoji] = useState(randomEmoji);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState('');
 
@@ -21,7 +25,7 @@ export default function CategoryManager() {
     if (!label.trim()) return;
     addCustomCategory({ label: label.trim(), emoji });
     setLabel('');
-    setEmoji(CATEGORY_EMOJI_CHOICES[Math.floor(Math.random() * CATEGORY_EMOJI_CHOICES.length)]);
+    setEmoji(randomEmoji());
     setAdding(false);
   };
 
@@ -88,22 +92,7 @@ export default function CategoryManager() {
 
       {adding ? (
         <form onSubmit={submitNew} className="card-soft p-3 rounded-xl flex flex-col gap-3">
-          <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5">
-            {CATEGORY_EMOJI_CHOICES.map((e) => (
-              <button
-                type="button"
-                key={e}
-                onClick={() => setEmoji(e)}
-                className="text-lg py-1.5 rounded-lg border-2 transition-all"
-                style={{
-                  borderColor: emoji === e ? 'var(--accent)' : 'var(--border)',
-                  background: emoji === e ? 'var(--accent)22' : 'var(--surface)',
-                }}
-              >
-                {e}
-              </button>
-            ))}
-          </div>
+          <EmojiPicker value={emoji} onChange={setEmoji} />
           <div className="flex gap-2">
             <input
               autoFocus

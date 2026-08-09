@@ -40,14 +40,6 @@ export const CUSTOM_CATEGORY_COLORS = [
   '#0d9488', '#b45309', '#4338ca', '#dc2626', '#059669',
 ];
 
-// Emojis sugeridos al crear una categoría (además puede escribir/pegar
-// cualquier otro emoji en el campo de texto).
-export const CATEGORY_EMOJI_CHOICES = [
-  '🐾', '💇', '🧴', '🏋️', '🎨', '🎵', '📱', '🔧', '🌱', '🚬',
-  '☕', '🍺', '🎂', '💻', '🖥️', '🧸', '🎁', '⛽', '🧾', '🏥',
-  '✈️', '🏕️', '🛠️', '📦', '💅', '🧹', '🐶', '👶', '⚽', '🎮',
-];
-
 export const KAKEIBO_GROUPS: Record<string, { label: string; emoji: string; desc: string }> = {
   supervivencia: {
     label: 'Supervivencia',

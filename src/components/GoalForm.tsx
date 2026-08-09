@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import Modal from './Modal';
+import EmojiPicker from './EmojiPicker';
 import { useStore } from '../store/useStore';
 
-const EMOJIS = ['🚗', '💍', '✈️', '🏡', '🎓', '💻', '📷', '🐶', '🏝️', '🎸', '👶', '🎁'];
+// Los más habituales para un objetivo de ahorro, a mano sin tener que buscar.
+const QUICK_EMOJIS = ['🚗', '💍', '✈️', '🏡', '🎓', '💻', '🐶', '🏝️', '🎸', '👶', '🎁', '🎉'];
 
 export default function GoalForm({ open, onClose }: { open: boolean; onClose: () => void }) {
   const addGoal = useStore((s) => s.addGoal);
@@ -10,12 +12,14 @@ export default function GoalForm({ open, onClose }: { open: boolean; onClose: ()
   const [emoji, setEmoji] = useState('🚗');
   const [target, setTarget] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [showMoreIcons, setShowMoreIcons] = useState(false);
 
   const reset = () => {
     setName('');
     setEmoji('🚗');
     setTarget('');
     setDeadline('');
+    setShowMoreIcons(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,7 +43,7 @@ export default function GoalForm({ open, onClose }: { open: boolean; onClose: ()
         <div>
           <label className="text-xs font-bold text-soft uppercase tracking-wide">Elige un icono</label>
           <div className="grid grid-cols-6 gap-2 mt-2">
-            {EMOJIS.map((e) => (
+            {QUICK_EMOJIS.map((e) => (
               <button
                 type="button"
                 key={e}
@@ -54,6 +58,18 @@ export default function GoalForm({ open, onClose }: { open: boolean; onClose: ()
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={() => setShowMoreIcons((v) => !v)}
+            className="text-xs font-bold text-accent mt-2"
+          >
+            {showMoreIcons ? '↑ Ocultar iconos' : '↓ Ver más iconos'}
+          </button>
+          {showMoreIcons && (
+            <div className="mt-2">
+              <EmojiPicker value={emoji} onChange={setEmoji} />
+            </div>
+          )}
         </div>
 
         <div>
