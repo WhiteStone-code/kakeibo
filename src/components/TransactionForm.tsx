@@ -108,7 +108,7 @@ export default function TransactionForm({
                 onClick={() => setAmount(String(quick))}
                 className="card-soft px-3 py-1 rounded-full text-xs font-bold text-soft hover:text-accent"
               >
-                {quick}{currency}
+                {quick} {currency}
               </button>
             ))}
           </div>

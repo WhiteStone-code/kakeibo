@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.4.1';
+export const APP_VERSION = '0.5.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,20 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.5.0',
+    date: '9 ago 2026',
+    title: 'Divisas, calendario, inversión, Excel y lista de la compra',
+    items: [
+      'Más de 90 divisas del mundo, con buscador (incluido el franco suizo)',
+      'Calendario mensual de gastos: de un vistazo ves qué días gastaste más',
+      'Nueva sección "¿Y si invierto?": compara guardar el dinero vs invertirlo en oro, un fondo indexado o acciones, con gráfica y aviso claro de que es orientativo',
+      'Conversor rápido de divisas (la única parte que necesita internet)',
+      'Exportación a Excel de verdad: varias hojas, con colores y formato, no solo una tabla',
+      'Lista de la compra con presupuesto y total gastado, que puede convertirse en un movimiento con un toque',
+      'La Reflexión Kakeibo ahora explica para qué sirve y te da un veredicto (vas bien / te desvías) en vez de solo guardar datos',
+    ],
+  },
   {
     version: '0.4.1',
     date: '9 ago 2026',

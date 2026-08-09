@@ -13,6 +13,8 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Panel', emoji: '🏠' },
   { id: 'transacciones', label: 'Movimientos', emoji: '📒' },
   { id: 'objetivos', label: 'Objetivos', emoji: '🎯' },
+  { id: 'lista', label: 'Lista de la compra', emoji: '🛒' },
+  { id: 'invertir', label: '¿Y si invierto?', emoji: '📈' },
   { id: 'logros', label: 'Logros', emoji: '🎖️' },
   { id: 'reflexion', label: 'Reflexión', emoji: '🧘' },
   { id: 'ajustes', label: 'Ajustes', emoji: '⚙️' },

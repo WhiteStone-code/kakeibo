@@ -3,6 +3,7 @@ import { useStore } from '../../store/useStore';
 import { useAllCategories } from '../../hooks/useCategories';
 import { getCategory } from '../../data/categories';
 import { formatMoney } from '../../utils/format';
+import SpendingCalendar from '../SpendingCalendar';
 import type { Transaction } from '../../types';
 
 export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction) => void }) {
@@ -11,6 +12,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
   const currency = useStore((s) => s.settings.currency);
   const allCategories = useAllCategories();
   const [filter, setFilter] = useState<'todos' | 'gasto' | 'ingreso'>('todos');
+  const [view, setView] = useState<'lista' | 'calendario'>('lista');
 
   const sorted = useMemo(() => {
     return [...transactions]
@@ -37,21 +39,40 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
         </p>
       </div>
 
-      <div className="flex gap-2">
-        {(['todos', 'gasto', 'ingreso'] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full text-sm font-bold ${
-              filter === f ? 'btn-accent' : 'card-soft text-soft'
-            }`}
-          >
-            {f === 'todos' ? 'Todos' : f === 'gasto' ? '💸 Gastos' : '💰 Ingresos'}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex gap-2">
+          {(['todos', 'gasto', 'ingreso'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-full text-sm font-bold ${
+                filter === f ? 'btn-accent' : 'card-soft text-soft'
+              }`}
+            >
+              {f === 'todos' ? 'Todos' : f === 'gasto' ? '💸 Gastos' : '💰 Ingresos'}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 p-1 bg-app-soft rounded-2xl">
+          {(['lista', 'calendario'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                view === v ? 'btn-accent' : 'text-soft'
+              }`}
+            >
+              {v === 'lista' ? '📋 Lista' : '📅 Calendario'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {grouped.length === 0 ? (
+      {view === 'calendario' ? (
+        <div className="card p-5">
+          <SpendingCalendar />
+        </div>
+      ) : grouped.length === 0 ? (
         <div className="card p-10 text-center text-soft">
           <p className="text-3xl mb-2">🍃</p>
           Todavía no hay movimientos aquí.

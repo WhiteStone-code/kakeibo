@@ -1,11 +1,10 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { THEMES } from '../../data/themes';
-import { useExpenseCategories } from '../../hooks/useCategories';
+import { useExpenseCategories, useAllCategories } from '../../hooks/useCategories';
 import CategoryManager from '../CategoryManager';
+import CurrencyPicker from '../CurrencyPicker';
 import type { ThemeId } from '../../types';
-
-const CURRENCIES = ['€', '$', '£', 'MXN$', 'ARS$', 'COL$'];
 
 export default function SettingsView() {
   const settings = useStore((s) => s.settings);
@@ -13,7 +12,9 @@ export default function SettingsView() {
   const budgets = useStore((s) => s.budgets);
   const setBudget = useStore((s) => s.setBudget);
   const expenseCategories = useExpenseCategories();
+  const allCategories = useAllCategories();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [exporting, setExporting] = useState(false);
 
   const exportData = () => {
     const state = useStore.getState();
@@ -60,9 +61,24 @@ export default function SettingsView() {
         goals: [],
         reflections: [],
         unlocked: [],
+        budgets: {},
+        shoppingList: [],
         lastCelebratedGoal: null,
         lastUnlockedIds: [],
       });
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      // Carga bajo demanda: exceljs pesa bastante y solo hace falta cuando
+      // se pulsa este botón, no en cada arranque de la app.
+      const { exportToExcel } = await import('../../utils/exportExcel');
+      const state = useStore.getState();
+      await exportToExcel(state, allCategories);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -85,19 +101,7 @@ export default function SettingsView() {
 
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">Moneda</label>
-        <div className="flex flex-wrap gap-2">
-          {CURRENCIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => updateSettings({ currency: c })}
-              className={`px-4 py-2 rounded-full text-sm font-bold ${
-                settings.currency === c ? 'btn-accent' : 'card-soft text-soft'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <CurrencyPicker value={settings.currency} onChange={(currency) => updateSettings({ currency })} />
       </div>
 
       <div className="card p-5 flex flex-col gap-3">
@@ -182,7 +186,14 @@ export default function SettingsView() {
         </p>
         <div className="flex flex-wrap gap-2">
           <button onClick={exportData} className="btn-accent font-bold px-4 py-2 rounded-xl text-sm">
-            ⬇️ Exportar backup
+            ⬇️ Exportar backup (JSON)
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="card-soft font-bold px-4 py-2 rounded-xl text-sm text-accent disabled:opacity-60"
+          >
+            {exporting ? 'Generando…' : '📊 Exportar a Excel'}
           </button>
           <button
             onClick={() => fileRef.current?.click()}

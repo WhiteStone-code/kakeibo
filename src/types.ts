@@ -102,6 +102,14 @@ export interface UnlockedAchievement {
 
 export type Budgets = Record<string, number>;
 
+export interface ShoppingItem {
+  id: string;
+  name: string;
+  estPrice: number | null;
+  checked: boolean;
+  createdAt: number;
+}
+
 export interface UserSettings {
   theme: ThemeId;
   mode: ColorMode;

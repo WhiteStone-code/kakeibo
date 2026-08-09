@@ -14,6 +14,8 @@ import GoalsView from './components/views/GoalsView';
 import AchievementsView from './components/views/AchievementsView';
 import ReflectionView from './components/views/ReflectionView';
 import SettingsView from './components/views/SettingsView';
+import InvestView from './components/views/InvestView';
+import ShoppingListView from './components/views/ShoppingListView';
 import WhatsNewModal from './components/WhatsNewModal';
 import { ACHIEVEMENTS } from './data/achievements';
 import { APP_VERSION } from './data/changelog';
@@ -25,6 +27,8 @@ export type View =
   | 'objetivos'
   | 'logros'
   | 'reflexion'
+  | 'invertir'
+  | 'lista'
   | 'ajustes';
 
 export default function App() {
@@ -104,6 +108,8 @@ export default function App() {
           {view === 'objetivos' && <GoalsView />}
           {view === 'logros' && <AchievementsView />}
           {view === 'reflexion' && <ReflectionView />}
+          {view === 'invertir' && <InvestView />}
+          {view === 'lista' && <ShoppingListView />}
           {view === 'ajustes' && <SettingsView />}
         </main>
       </div>

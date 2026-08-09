@@ -5,6 +5,7 @@ import type {
   Category,
   Goal,
   MonthlyReflection,
+  ShoppingItem,
   Transaction,
   UnlockedAchievement,
   UserSettings,
@@ -26,6 +27,7 @@ interface StoreState {
   unlocked: UnlockedAchievement[];
   budgets: Budgets;
   customCategories: Category[];
+  shoppingList: ShoppingItem[];
   settings: UserSettings;
   lastCelebratedGoal: string | null;
   lastUnlockedIds: string[];
@@ -46,6 +48,12 @@ interface StoreState {
   updateCustomCategory: (id: string, patch: { label?: string; emoji?: string }) => void;
   removeCustomCategory: (id: string) => void;
 
+  addShoppingItem: (item: { name: string; estPrice: number | null }) => void;
+  toggleShoppingItem: (id: string) => void;
+  removeShoppingItem: (id: string) => void;
+  clearCheckedShoppingItems: () => void;
+  clearShoppingList: () => void;
+
   updateSettings: (s: Partial<UserSettings>) => void;
   clearLastUnlocked: () => void;
   clearCelebratedGoal: () => void;
@@ -54,11 +62,16 @@ interface StoreState {
 const defaultSettings: UserSettings = {
   theme: 'zen',
   mode: 'light',
-  currency: '€',
+  currency: 'EUR',
   userName: '',
   monthlyIncomeTarget: 0,
   onboarded: false,
   lastSeenVersion: '',
+};
+
+// Símbolos usados antes de pasar a códigos ISO (v1 → v2) — se migran solos.
+const LEGACY_CURRENCY_MAP: Record<string, string> = {
+  '€': 'EUR', '$': 'USD', '£': 'GBP', 'MXN$': 'MXN', 'ARS$': 'ARS', 'COL$': 'COP',
 };
 
 export const useStore = create<StoreState>()(
@@ -70,6 +83,7 @@ export const useStore = create<StoreState>()(
       unlocked: [],
       budgets: {},
       customCategories: [],
+      shoppingList: [],
       settings: defaultSettings,
       lastCelebratedGoal: null,
       lastUnlockedIds: [],
@@ -194,6 +208,34 @@ export const useStore = create<StoreState>()(
         set((state) => ({ customCategories: state.customCategories.filter((c) => c.id !== id) }));
       },
 
+      addShoppingItem: (item) => {
+        if (!item.name.trim()) return;
+        const newItem: ShoppingItem = {
+          id: uid(),
+          name: item.name.trim(),
+          estPrice: item.estPrice !== null ? round2(Math.abs(item.estPrice)) : null,
+          checked: false,
+          createdAt: Date.now(),
+        };
+        set((state) => ({ shoppingList: [...state.shoppingList, newItem] }));
+      },
+
+      toggleShoppingItem: (id) => {
+        set((state) => ({
+          shoppingList: state.shoppingList.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i)),
+        }));
+      },
+
+      removeShoppingItem: (id) => {
+        set((state) => ({ shoppingList: state.shoppingList.filter((i) => i.id !== id) }));
+      },
+
+      clearCheckedShoppingItems: () => {
+        set((state) => ({ shoppingList: state.shoppingList.filter((i) => !i.checked) }));
+      },
+
+      clearShoppingList: () => set({ shoppingList: [] }),
+
       updateSettings: (s) => {
         set((state) => ({ settings: { ...state.settings, ...s } }));
       },
@@ -201,7 +243,22 @@ export const useStore = create<StoreState>()(
       clearLastUnlocked: () => set({ lastUnlockedIds: [] }),
       clearCelebratedGoal: () => set({ lastCelebratedGoal: null }),
     }),
-    { name: 'kakeibo-storage', version: 1 }
+    {
+      name: 'kakeibo-storage',
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as StoreState;
+        if (version < 2 && state?.settings) {
+          const cur = state.settings.currency;
+          if (cur && LEGACY_CURRENCY_MAP[cur]) {
+            state.settings.currency = LEGACY_CURRENCY_MAP[cur];
+          } else if (cur && cur.length !== 3) {
+            state.settings.currency = 'EUR';
+          }
+        }
+        return state;
+      },
+    }
   )
 );
 
