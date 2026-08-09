@@ -1,0 +1,217 @@
+@import "tailwindcss";
+@import "@fontsource/baloo-2/400.css";
+@import "@fontsource/baloo-2/600.css";
+@import "@fontsource/baloo-2/700.css";
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============ Temas ============
+   Cada tema define las mismas variables para modo claro y oscuro.
+   accent / accent-2 / accent-3 son acentos decorativos del tema;
+   los colores de categorías del gráfico son fijos (ver data/categories.ts). */
+
+:root, html[data-theme="zen"] {
+  --bg: #FAF6F0;
+  --bg-soft: #F1EAE0;
+  --surface: #FFFFFF;
+  --surface-2: #F6F1E8;
+  --border: #E4DCCB;
+  --text: #2B241C;
+  --text-soft: #6B6152;
+  --accent: #7C9473;
+  --accent-2: #E8927C;
+  --accent-3: #2B3A55;
+  --accent-contrast: #FFFFFF;
+  --radius-hero: 28px;
+}
+html[data-theme="zen"].dark {
+  --bg: #171A16;
+  --bg-soft: #1E231C;
+  --surface: #232921;
+  --surface-2: #2A3126;
+  --border: #37402F;
+  --text: #ECEADF;
+  --text-soft: #ABB1A0;
+  --accent: #92AC86;
+  --accent-2: #E8927C;
+  --accent-3: #8FA7D6;
+  --accent-contrast: #171A16;
+}
+
+html[data-theme="sakura"] {
+  --bg: #FFF5F9;
+  --bg-soft: #FEE9F2;
+  --surface: #FFFFFF;
+  --surface-2: #FFF0F6;
+  --border: #FAD2E6;
+  --text: #3A2233;
+  --text-soft: #8A6B80;
+  --accent: #F582AE;
+  --accent-2: #8093F1;
+  --accent-3: #F3A8D9;
+  --accent-contrast: #FFFFFF;
+  --radius-hero: 32px;
+}
+html[data-theme="sakura"].dark {
+  --bg: #221721;
+  --bg-soft: #2B1C29;
+  --surface: #331F30;
+  --surface-2: #3B2438;
+  --border: #4C2E48;
+  --text: #FBE8F3;
+  --text-soft: #C79DBC;
+  --accent: #FF9DC4;
+  --accent-2: #9FAEFF;
+  --accent-3: #F3A8D9;
+  --accent-contrast: #221721;
+}
+
+html[data-theme="neon"] {
+  --bg: #F5F3FF;
+  --bg-soft: #ECE7FF;
+  --surface: #FFFFFF;
+  --surface-2: #F1EEFF;
+  --border: #DAD1FF;
+  --text: #1A1530;
+  --text-soft: #6C6390;
+  --accent: #B347FF;
+  --accent-2: #00C2D1;
+  --accent-3: #FF2E9A;
+  --accent-contrast: #FFFFFF;
+  --radius-hero: 20px;
+}
+html[data-theme="neon"].dark {
+  --bg: #0D0B1A;
+  --bg-soft: #140F26;
+  --surface: #1A1430;
+  --surface-2: #201A3B;
+  --border: #352C5C;
+  --text: #F1EDFF;
+  --text-soft: #A79ED6;
+  --accent: #C77BFF;
+  --accent-2: #00E5FF;
+  --accent-3: #FF4FB8;
+  --accent-contrast: #0D0B1A;
+}
+
+html[data-theme="oceano"] {
+  --bg: #EFFAFC;
+  --bg-soft: #DFF3F7;
+  --surface: #FFFFFF;
+  --surface-2: #E7F6F9;
+  --border: #C7E9F0;
+  --text: #0B2E3B;
+  --text-soft: #4E7C8C;
+  --accent: #0EA5C4;
+  --accent-2: #0B4F8A;
+  --accent-3: #4FD6C6;
+  --accent-contrast: #FFFFFF;
+  --radius-hero: 24px;
+}
+html[data-theme="oceano"].dark {
+  --bg: #061A22;
+  --bg-soft: #0A222C;
+  --surface: #0D2A35;
+  --surface-2: #103340;
+  --border: #1B4859;
+  --text: #E3F6FA;
+  --text-soft: #86B4C2;
+  --accent: #2FC6E6;
+  --accent-2: #4FD6C6;
+  --accent-3: #6FA9E0;
+  --accent-contrast: #061A22;
+}
+
+html[data-theme="bosque"] {
+  --bg: #F7F5EC;
+  --bg-soft: #EEEADA;
+  --surface: #FFFFFF;
+  --surface-2: #F1EEDF;
+  --border: #DDD5B8;
+  --text: #2B2618;
+  --text-soft: #6E664C;
+  --accent: #5B8C5A;
+  --accent-2: #8C5B3F;
+  --accent-3: #D9C27E;
+  --accent-contrast: #FFFFFF;
+  --radius-hero: 22px;
+}
+html[data-theme="bosque"].dark {
+  --bg: #14170F;
+  --bg-soft: #1B1F14;
+  --surface: #212619;
+  --surface-2: #262C1C;
+  --border: #3A4029;
+  --text: #ECE8D6;
+  --text-soft: #ADA688;
+  --accent: #7DB37B;
+  --accent-2: #C08256;
+  --accent-3: #D9C27E;
+  --accent-contrast: #14170F;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', system-ui, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-soft); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.card-soft {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.btn-accent:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-accent:active { transform: translateY(0); }
+
+.text-soft { color: var(--text-soft); }
+.border-theme { border-color: var(--border); }
+.bg-app { background: var(--bg); }
+.bg-app-soft { background: var(--bg-soft); }
+.bg-surface { background: var(--surface); }
+.bg-surface-2 { background: var(--surface-2); }
+.text-accent { color: var(--accent); }
+.bg-accent { background: var(--accent); }
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.85) translateY(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-pop { animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float { animation: float-y 3.5s ease-in-out infinite; }
