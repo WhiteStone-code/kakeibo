@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.4.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,15 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.4.0',
+    date: '9 ago 2026',
+    title: 'Llévatela al móvil',
+    items: [
+      'Ya se puede abrir desde el móvil en la misma red Wi-Fi que el ordenador',
+      'Se puede "Añadir a pantalla de inicio" y usarla como una app instalada, con su propio icono',
+    ],
+  },
   {
     version: '0.3.0',
     date: '9 ago 2026',
