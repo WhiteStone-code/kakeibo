@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.5.0';
+export const APP_VERSION = '0.6.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,21 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.6.0',
+    date: '9 ago 2026',
+    title: '6 idiomas, ingresos con categoría y más control',
+    items: [
+      'Toda la app en 6 idiomas (español, inglés, portugués, italiano, francés, alemán) — el selector está arriba a la derecha y cambia todo al instante',
+      'Arreglado: ya se puede elegir categoría también en los ingresos (salario, freelance, rendimientos, regalo, reembolso, otros), no solo en los gastos',
+      'Movimientos más detallados: método de pago y lugar (opcional) — para saber, por ejemplo, dónde compras más barato',
+      'Meta periódica opcional en Ajustes: ahorra al menos X o gasta como máximo X cada semana o cada mes',
+      'Tipo de cambio en vivo junto al selector de moneda',
+      'Lista de la compra: ahora puedes poner solo el dinero que quieres llevar (sin precio por producto) y añadir notas tipo "el pan aquí es mejor y más barato"',
+      'Los formularios avisan si falta algo en vez de no hacer nada al pulsar Guardar',
+      'Divisas más usadas (euro, dólar, franco suizo...) ya no se entierran entre el resto al buscar',
+    ],
+  },
   {
     version: '0.5.0',
     date: '9 ago 2026',

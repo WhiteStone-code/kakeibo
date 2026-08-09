@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { THEMES } from '../data/themes';
 import { APP_VERSION } from '../data/changelog';
+import { useT } from '../i18n/useT';
 import type { ThemeId } from '../types';
 
 export default function Onboarding() {
   const updateSettings = useStore((s) => s.updateSettings);
+  const { t } = useT();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [theme, setTheme] = useState<ThemeId>('zen');
@@ -28,17 +30,14 @@ export default function Onboarding() {
           <>
             <div className="text-center">
               <div className="text-6xl mb-3">⛩️</div>
-              <h1 className="font-display font-extrabold text-2xl">Bienvenido a Kakeibo</h1>
-              <p className="text-soft text-sm mt-2">
-                家計簿 · El arte japonés de llevar las cuentas con calma, sin culpa, con propósito.
-                Vamos a ayudarte a llegar a tus metas, un día a la vez.
-              </p>
+              <h1 className="font-display font-extrabold text-2xl">{t('onboarding.welcome')}</h1>
+              <p className="text-soft text-sm mt-2">{t('onboarding.subtitle')}</p>
             </div>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="¿Cómo te llamas?"
+              placeholder={t('onboarding.namePlaceholder')}
               className="px-4 py-3 rounded-2xl bg-surface-2 border border-theme outline-none focus:border-accent font-semibold text-center"
               onKeyDown={(e) => e.key === 'Enter' && setStep(1)}
             />
@@ -46,7 +45,7 @@ export default function Onboarding() {
               onClick={() => setStep(1)}
               className="btn-accent font-bold py-3 rounded-2xl shadow-md"
             >
-              Continuar →
+              {t('onboarding.continue')}
             </button>
           </>
         )}
@@ -54,28 +53,28 @@ export default function Onboarding() {
         {step === 1 && (
           <>
             <div className="text-center">
-              <h2 className="font-display font-extrabold text-xl">Elige tu ambiente</h2>
-              <p className="text-soft text-sm mt-1">Podrás cambiarlo cuando quieras en Ajustes</p>
+              <h2 className="font-display font-extrabold text-xl">{t('onboarding.chooseTheme')}</h2>
+              <p className="text-soft text-sm mt-1">{t('onboarding.chooseThemeSub')}</p>
             </div>
             <div className="grid grid-cols-1 gap-2.5">
-              {THEMES.map((t) => (
+              {THEMES.map((th) => (
                 <button
-                  key={t.id}
+                  key={th.id}
                   onClick={() => {
-                    setTheme(t.id as ThemeId);
-                    updateSettings({ theme: t.id as ThemeId });
+                    setTheme(th.id as ThemeId);
+                    updateSettings({ theme: th.id as ThemeId });
                   }}
                   className={`flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all ${
-                    theme === t.id ? 'border-accent shadow-md' : 'border-theme'
+                    theme === th.id ? 'border-accent shadow-md' : 'border-theme'
                   }`}
                 >
-                  <span className="text-2xl">{t.emoji}</span>
+                  <span className="text-2xl">{th.emoji}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-display font-bold text-sm">{t.name}</p>
-                    <p className="text-xs text-soft leading-tight">{t.tagline}</p>
+                    <p className="font-display font-bold text-sm">{th.name}</p>
+                    <p className="text-xs text-soft leading-tight">{th.tagline}</p>
                   </div>
                   <div className="flex -space-x-1.5 shrink-0">
-                    {t.preview.map((c, i) => (
+                    {th.preview.map((c, i) => (
                       <span
                         key={i}
                         className="w-4 h-4 rounded-full border-2 border-surface"
@@ -87,7 +86,7 @@ export default function Onboarding() {
               ))}
             </div>
             <button onClick={finish} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
-              ¡Empezar! 🌱
+              {t('onboarding.start')}
             </button>
           </>
         )}

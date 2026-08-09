@@ -28,6 +28,7 @@ interface StoreState {
   budgets: Budgets;
   customCategories: Category[];
   shoppingList: ShoppingItem[];
+  shoppingBudget: number;
   settings: UserSettings;
   lastCelebratedGoal: string | null;
   lastUnlockedIds: string[];
@@ -44,15 +45,17 @@ interface StoreState {
 
   setBudget: (category: string, amount: number) => void;
 
-  addCustomCategory: (c: { label: string; emoji: string }) => void;
+  addCustomCategory: (c: { label: string; emoji: string; group?: Category['group'] }) => void;
   updateCustomCategory: (id: string, patch: { label?: string; emoji?: string }) => void;
   removeCustomCategory: (id: string) => void;
 
-  addShoppingItem: (item: { name: string; estPrice: number | null }) => void;
+  addShoppingItem: (item: { name: string; estPrice: number | null; note?: string | null }) => void;
   toggleShoppingItem: (id: string) => void;
   removeShoppingItem: (id: string) => void;
+  updateShoppingItem: (id: string, patch: { name?: string; estPrice?: number | null; note?: string | null }) => void;
   clearCheckedShoppingItems: () => void;
   clearShoppingList: () => void;
+  setShoppingBudget: (amount: number) => void;
 
   updateSettings: (s: Partial<UserSettings>) => void;
   clearLastUnlocked: () => void;
@@ -67,6 +70,11 @@ const defaultSettings: UserSettings = {
   monthlyIncomeTarget: 0,
   onboarded: false,
   lastSeenVersion: '',
+  language: 'es',
+  periodicGoalEnabled: false,
+  periodicGoalAmount: 0,
+  periodicGoalFrequency: 'mensual',
+  periodicGoalType: 'ahorro',
 };
 
 // Símbolos usados antes de pasar a códigos ISO (v1 → v2) — se migran solos.
@@ -84,6 +92,7 @@ export const useStore = create<StoreState>()(
       budgets: {},
       customCategories: [],
       shoppingList: [],
+      shoppingBudget: 0,
       settings: defaultSettings,
       lastCelebratedGoal: null,
       lastUnlockedIds: [],
@@ -183,7 +192,7 @@ export const useStore = create<StoreState>()(
             emoji: c.emoji || '🏷️',
             color,
             colorDark: color,
-            group: 'extra',
+            group: c.group ?? 'extra',
             custom: true,
           };
           return { customCategories: [...state.customCategories, category] };
@@ -214,6 +223,7 @@ export const useStore = create<StoreState>()(
           id: uid(),
           name: item.name.trim(),
           estPrice: item.estPrice !== null ? round2(Math.abs(item.estPrice)) : null,
+          note: item.note?.trim() || null,
           checked: false,
           createdAt: Date.now(),
         };
@@ -230,11 +240,30 @@ export const useStore = create<StoreState>()(
         set((state) => ({ shoppingList: state.shoppingList.filter((i) => i.id !== id) }));
       },
 
+      updateShoppingItem: (id, patch) => {
+        set((state) => ({
+          shoppingList: state.shoppingList.map((i) =>
+            i.id === id
+              ? {
+                  ...i,
+                  ...(patch.name !== undefined ? { name: patch.name.trim() || i.name } : {}),
+                  ...(patch.estPrice !== undefined
+                    ? { estPrice: patch.estPrice !== null ? round2(Math.abs(patch.estPrice)) : null }
+                    : {}),
+                  ...(patch.note !== undefined ? { note: patch.note?.trim() || null } : {}),
+                }
+              : i
+          ),
+        }));
+      },
+
       clearCheckedShoppingItems: () => {
         set((state) => ({ shoppingList: state.shoppingList.filter((i) => !i.checked) }));
       },
 
       clearShoppingList: () => set({ shoppingList: [] }),
+
+      setShoppingBudget: (amount) => set({ shoppingBudget: round2(Math.max(0, amount)) }),
 
       updateSettings: (s) => {
         set((state) => ({ settings: { ...state.settings, ...s } }));
@@ -257,6 +286,19 @@ export const useStore = create<StoreState>()(
           }
         }
         return state;
+      },
+      // Merge profundo de `settings`: por defecto zustand reemplaza el objeto
+      // entero, así que cualquier campo nuevo que añadamos a defaultSettings
+      // (idioma, meta periódica...) quedaría `undefined` para quien ya tenía
+      // datos guardados de una versión anterior. Con esto siempre parte de
+      // los valores por defecto y solo sobreescribe lo que sí venía guardado.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<StoreState>;
+        return {
+          ...current,
+          ...p,
+          settings: { ...current.settings, ...(p.settings ?? {}) },
+        };
       },
     }
   )

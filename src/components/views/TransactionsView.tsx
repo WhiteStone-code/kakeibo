@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { useAllCategories } from '../../hooks/useCategories';
 import { getCategory } from '../../data/categories';
+import { useCategoryLabel } from '../../i18n/useCategoryLabel';
+import { useT } from '../../i18n/useT';
 import { formatMoney } from '../../utils/format';
 import SpendingCalendar from '../SpendingCalendar';
 import type { Transaction } from '../../types';
@@ -11,6 +13,8 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
   const removeTransaction = useStore((s) => s.removeTransaction);
   const currency = useStore((s) => s.settings.currency);
   const allCategories = useAllCategories();
+  const categoryLabel = useCategoryLabel();
+  const { t } = useT();
   const [filter, setFilter] = useState<'todos' | 'gasto' | 'ingreso'>('todos');
   const [view, setView] = useState<'lista' | 'calendario'>('lista');
 
@@ -33,10 +37,8 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
   return (
     <div className="flex flex-col gap-4 pb-24 md:pb-8">
       <div>
-        <h1 className="font-display font-extrabold text-2xl">Movimientos</h1>
-        <p className="text-soft text-sm">
-          Todo lo que has registrado hasta ahora · toca uno para editarlo
-        </p>
+        <h1 className="font-display font-extrabold text-2xl">{t('transactions.title')}</h1>
+        <p className="text-soft text-sm">{t('transactions.subtitle')}</p>
       </div>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -49,7 +51,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
                 filter === f ? 'btn-accent' : 'card-soft text-soft'
               }`}
             >
-              {f === 'todos' ? 'Todos' : f === 'gasto' ? '💸 Gastos' : '💰 Ingresos'}
+              {f === 'todos' ? t('transactions.all') : f === 'gasto' ? t('transactions.expenses') : t('transactions.income')}
             </button>
           ))}
         </div>
@@ -62,7 +64,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
                 view === v ? 'btn-accent' : 'text-soft'
               }`}
             >
-              {v === 'lista' ? '📋 Lista' : '📅 Calendario'}
+              {v === 'lista' ? t('transactions.list') : t('transactions.calendar')}
             </button>
           ))}
         </div>
@@ -75,39 +77,44 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
       ) : grouped.length === 0 ? (
         <div className="card p-10 text-center text-soft">
           <p className="text-3xl mb-2">🍃</p>
-          Todavía no hay movimientos aquí.
+          {t('transactions.empty')}
         </div>
       ) : (
         grouped.map(([date, items]) => (
           <div key={date} className="card p-4">
             <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{date}</p>
             <ul className="flex flex-col divide-y divide-theme">
-              {items.map((t) => {
-                const cat = getCategory(t.category, allCategories);
+              {items.map((tx) => {
+                const cat = getCategory(tx.category, allCategories);
+                const label = categoryLabel(cat);
                 return (
-                  <li key={t.id} className="flex items-center gap-3 py-2.5 group">
+                  <li key={tx.id} className="flex items-center gap-3 py-2.5 group">
                     <button
-                      onClick={() => onEdit(t)}
+                      onClick={() => onEdit(tx)}
                       className="flex items-center gap-3 flex-1 min-w-0 text-left"
                     >
                       <span className="text-xl">{cat.emoji}</span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-sm truncate">{t.note || cat.label}</p>
-                        <p className="text-xs text-soft">{cat.label}</p>
+                        <p className="font-semibold text-sm truncate">{tx.note || label}</p>
+                        <p className="text-xs text-soft">
+                          {label}
+                          {tx.place ? ` · ${tx.place}` : ''}
+                        </p>
                       </div>
                     </button>
                     <span
                       className={`font-bold tabular-nums text-sm ${
-                        t.type === 'ingreso' ? 'text-[#0ca30c]' : ''
+                        tx.type === 'ingreso' ? 'text-[#0ca30c]' : ''
                       }`}
                     >
-                      {t.type === 'ingreso' ? '+' : '-'}
-                      {formatMoney(t.amount, currency)}
+                      {tx.type === 'ingreso' ? '+' : '-'}
+                      {formatMoney(tx.amount, currency)}
                     </span>
                     <button
-                      onClick={() => removeTransaction(t.id)}
+                      onClick={() => removeTransaction(tx.id)}
+                      aria-label={t('common.delete')}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-soft hover:text-[#e34948] text-sm px-1.5"
-                      title="Eliminar"
+                      title={t('common.delete')}
                     >
                       ✕
                     </button>

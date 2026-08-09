@@ -1,5 +1,6 @@
 import { useStore } from '../store/useStore';
 import { getQuoteForDay } from '../data/quotes';
+import { useT } from '../i18n/useT';
 
 const MASCOTS: Record<string, string> = {
   zen: '🐢',
@@ -12,6 +13,7 @@ const MASCOTS: Record<string, string> = {
 export default function MascotTip() {
   const theme = useStore((s) => s.settings.theme);
   const userName = useStore((s) => s.settings.userName);
+  const { t } = useT();
   const quote = getQuoteForDay();
   const mascot = MASCOTS[theme] ?? '🐢';
 
@@ -20,7 +22,7 @@ export default function MascotTip() {
       <div className="text-4xl animate-float shrink-0">{mascot}</div>
       <div className="min-w-0">
         <p className="text-xs font-bold text-accent uppercase tracking-wide mb-0.5">
-          {userName ? `Consejo para ${userName}` : 'Consejo del día'}
+          {userName ? t('mascot.tipForName', { name: userName }) : t('mascot.tipOfDay')}
         </p>
         <p className="text-sm leading-snug">{quote}</p>
       </div>

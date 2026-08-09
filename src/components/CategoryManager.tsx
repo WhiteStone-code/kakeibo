@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { categoryColor } from '../data/categories';
 import { ALL_EMOJIS } from '../data/emojiLibrary';
+import { useCategoryLabel } from '../i18n/useCategoryLabel';
+import { useT } from '../i18n/useT';
 import EmojiPicker from './EmojiPicker';
 
 const randomEmoji = () => ALL_EMOJIS[Math.floor(Math.random() * ALL_EMOJIS.length)];
@@ -9,12 +11,16 @@ const randomEmoji = () => ALL_EMOJIS[Math.floor(Math.random() * ALL_EMOJIS.lengt
 /** Alta, edición y borrado de categorías propias de movimiento. */
 export default function CategoryManager() {
   const customCategories = useStore((s) => s.customCategories);
+  const transactions = useStore((s) => s.transactions);
   const addCustomCategory = useStore((s) => s.addCustomCategory);
   const updateCustomCategory = useStore((s) => s.updateCustomCategory);
   const removeCustomCategory = useStore((s) => s.removeCustomCategory);
   const mode = useStore((s) => s.settings.mode);
+  const categoryLabel = useCategoryLabel();
+  const { t } = useT();
 
   const [adding, setAdding] = useState(false);
+  const [kind, setKind] = useState<'gasto' | 'ingreso'>('gasto');
   const [label, setLabel] = useState('');
   const [emoji, setEmoji] = useState(randomEmoji);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,9 +29,10 @@ export default function CategoryManager() {
   const submitNew = (e: React.FormEvent) => {
     e.preventDefault();
     if (!label.trim()) return;
-    addCustomCategory({ label: label.trim(), emoji });
+    addCustomCategory({ label: label.trim(), emoji, group: kind === 'ingreso' ? 'ingreso' : 'extra' });
     setLabel('');
     setEmoji(randomEmoji());
+    setKind('gasto');
     setAdding(false);
   };
 
@@ -39,13 +46,19 @@ export default function CategoryManager() {
     setEditingId(null);
   };
 
+  const handleDelete = (id: string, name: string) => {
+    const count = transactions.filter((tx) => tx.category === id).length;
+    const msg =
+      count > 0
+        ? t('category.deleteConfirmWithUse', { name, count })
+        : t('category.deleteConfirmNoUse', { name });
+    if (confirm(msg)) removeCustomCategory(id);
+  };
+
   return (
     <div className="card p-5 flex flex-col gap-3">
-      <label className="text-xs font-bold text-soft uppercase tracking-wide">Tus categorías</label>
-      <p className="text-xs text-soft -mt-1">
-        Además de las 12 de fábrica, crea las tuyas: mascota, gimnasio, tabaco, lo que gastes de
-        verdad.
-      </p>
+      <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.categoriesTitle')}</label>
+      <p className="text-xs text-soft -mt-1">{t('settings.categoriesDesc')}</p>
 
       {customCategories.length > 0 && (
         <ul className="flex flex-col gap-2">
@@ -56,6 +69,9 @@ export default function CategoryManager() {
                 style={{ background: categoryColor(cat, mode) }}
               />
               <span className="text-lg shrink-0">{cat.emoji}</span>
+              <span className="text-[10px] shrink-0" title={cat.group === 'ingreso' ? t('txform.income') : t('txform.expense')}>
+                {cat.group === 'ingreso' ? '💰' : '💸'}
+              </span>
               {editingId === cat.id ? (
                 <input
                   autoFocus
@@ -69,19 +85,15 @@ export default function CategoryManager() {
                 <button
                   onClick={() => startEdit(cat.id, cat.label)}
                   className="flex-1 min-w-0 text-left text-sm font-semibold truncate hover:text-accent"
-                  title="Editar nombre"
+                  title={t('category.editName')}
                 >
-                  {cat.label}
+                  {categoryLabel(cat)}
                 </button>
               )}
               <button
-                onClick={() => {
-                  if (confirm(`¿Borrar la categoría "${cat.label}"? Los movimientos ya guardados con ella se quedan como "Otros".`)) {
-                    removeCustomCategory(cat.id);
-                  }
-                }}
+                onClick={() => handleDelete(cat.id, cat.label)}
                 className="text-soft hover:text-[#e34948] text-sm px-1 shrink-0"
-                title="Eliminar categoría"
+                title={t('category.deleteTitle')}
               >
                 ✕
               </button>
@@ -92,24 +104,38 @@ export default function CategoryManager() {
 
       {adding ? (
         <form onSubmit={submitNew} className="card-soft p-3 rounded-xl flex flex-col gap-3">
+          <div className="flex gap-2 p-1 bg-surface rounded-xl w-fit">
+            {(['gasto', 'ingreso'] as const).map((k) => (
+              <button
+                type="button"
+                key={k}
+                onClick={() => setKind(k)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  kind === k ? 'btn-accent' : 'text-soft'
+                }`}
+              >
+                {k === 'gasto' ? t('txform.expense') : t('txform.income')}
+              </button>
+            ))}
+          </div>
           <EmojiPicker value={emoji} onChange={setEmoji} />
           <div className="flex gap-2">
             <input
               autoFocus
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="Nombre de la categoría (ej: Gimnasio)"
+              placeholder={t('settings.categoryNamePlaceholder')}
               className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-surface border border-theme outline-none focus:border-accent text-sm font-semibold"
             />
             <button type="submit" className="btn-accent font-bold px-4 rounded-xl text-sm">
-              Crear
+              {t('common.create')}
             </button>
             <button
               type="button"
               onClick={() => setAdding(false)}
               className="text-soft font-bold px-3 rounded-xl text-sm"
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
           </div>
         </form>
@@ -118,7 +144,7 @@ export default function CategoryManager() {
           onClick={() => setAdding(true)}
           className="card-soft text-accent font-bold py-2.5 rounded-xl text-sm"
         >
-          + Crear categoría
+          {t('settings.createCategory')}
         </button>
       )}
     </div>

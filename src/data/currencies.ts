@@ -100,13 +100,27 @@ export const CURRENCIES: CurrencyDef[] = [
   { code: 'PGK', name: 'Kina papú' },
 ];
 
+// Las más habituales van fijas arriba (en este orden); el resto se
+// alfabetiza detrás. Sin esto, el listado alfabético completo entierra el
+// euro y el dólar bajo divisas mucho menos usadas.
+const PRIORITY_CODES = ['EUR', 'USD', 'CHF', 'GBP', 'JPY', 'CNY', 'MXN', 'BRL', 'CAD', 'AUD'];
+
 // Elimina posibles duplicados por código (p. ej. ISK aparecía dos veces)
 const seen = new Set<string>();
-export const UNIQUE_CURRENCIES: CurrencyDef[] = CURRENCIES.filter((c) => {
+const deduped = CURRENCIES.filter((c) => {
   if (seen.has(c.code)) return false;
   seen.add(c.code);
   return true;
-}).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+});
+
+const priority = PRIORITY_CODES.map((code) => deduped.find((c) => c.code === code)).filter(
+  (c): c is CurrencyDef => Boolean(c)
+);
+const rest = deduped
+  .filter((c) => !PRIORITY_CODES.includes(c.code))
+  .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+
+export const UNIQUE_CURRENCIES: CurrencyDef[] = [...priority, ...rest];
 
 export const getCurrencyName = (code: string): string =>
   UNIQUE_CURRENCIES.find((c) => c.code === code)?.name ?? code;

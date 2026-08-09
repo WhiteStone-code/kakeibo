@@ -1,0 +1,408 @@
+import type { LanguageCode } from '../types';
+
+export interface LanguageMeta {
+  code: LanguageCode;
+  label: string;
+  flag: string;
+}
+
+export const LANGUAGES: LanguageMeta[] = [
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+];
+
+export const LOCALE_MAP: Record<LanguageCode, string> = {
+  es: 'es-ES',
+  en: 'en-GB',
+  pt: 'pt-PT',
+  it: 'it-IT',
+  fr: 'fr-FR',
+  de: 'de-DE',
+};
+
+type Row = Record<LanguageCode, string>;
+
+// Un renglón por texto de la interfaz, con las 6 traducciones juntas — así
+// es difícil que un idioma se quede desalineado del resto al añadir claves.
+// Las claves ausentes en `translate()` caen automáticamente al español.
+const DICT: Record<string, Row> = {
+  // ---------- Genérico ----------
+  'app.name': { es: 'Kakeibo', en: 'Kakeibo', pt: 'Kakeibo', it: 'Kakeibo', fr: 'Kakeibo', de: 'Kakeibo' },
+  'app.tagline': { es: 'tu diario de dinero', en: 'your money diary', pt: 'o teu diário de dinheiro', it: 'il tuo diario dei soldi', fr: 'ton journal financier', de: 'dein Finanztagebuch' },
+  'common.cancel': { es: 'Cancelar', en: 'Cancel', pt: 'Cancelar', it: 'Annulla', fr: 'Annuler', de: 'Abbrechen' },
+  'common.save': { es: 'Guardar', en: 'Save', pt: 'Guardar', it: 'Salva', fr: 'Enregistrer', de: 'Speichern' },
+  'common.delete': { es: 'Eliminar', en: 'Delete', pt: 'Eliminar', it: 'Elimina', fr: 'Supprimer', de: 'Löschen' },
+  'common.edit': { es: 'Editar', en: 'Edit', pt: 'Editar', it: 'Modifica', fr: 'Modifier', de: 'Bearbeiten' },
+  'common.create': { es: 'Crear', en: 'Create', pt: 'Criar', it: 'Crea', fr: 'Créer', de: 'Erstellen' },
+  'common.unlimited': { es: 'Sin límite', en: 'No limit', pt: 'Sem limite', it: 'Nessun limite', fr: 'Sans limite', de: 'Kein Limit' },
+  'common.optional': { es: 'opcional', en: 'optional', pt: 'opcional', it: 'facoltativo', fr: 'facultatif', de: 'optional' },
+
+  // ---------- Navegación ----------
+  'nav.dashboard': { es: 'Panel', en: 'Dashboard', pt: 'Painel', it: 'Pannello', fr: 'Tableau de bord', de: 'Übersicht' },
+  'nav.transactions': { es: 'Movimientos', en: 'Transactions', pt: 'Movimentos', it: 'Movimenti', fr: 'Mouvements', de: 'Buchungen' },
+  'nav.goals': { es: 'Objetivos', en: 'Goals', pt: 'Objetivos', it: 'Obiettivi', fr: 'Objectifs', de: 'Ziele' },
+  'nav.shopping': { es: 'Lista de la compra', en: 'Shopping list', pt: 'Lista de compras', it: 'Lista della spesa', fr: 'Liste de courses', de: 'Einkaufsliste' },
+  'nav.invest': { es: '¿Y si invierto?', en: 'What if I invest?', pt: 'E se eu investir?', it: 'E se investissi?', fr: 'Et si j’investissais ?', de: 'Was, wenn ich investiere?' },
+  'nav.achievements': { es: 'Logros', en: 'Achievements', pt: 'Conquistas', it: 'Obiettivi sbloccati', fr: 'Succès', de: 'Erfolge' },
+  'nav.reflection': { es: 'Reflexión', en: 'Reflection', pt: 'Reflexão', it: 'Riflessione', fr: 'Réflexion', de: 'Reflexion' },
+  'nav.settings': { es: 'Ajustes', en: 'Settings', pt: 'Definições', it: 'Impostazioni', fr: 'Réglages', de: 'Einstellungen' },
+  'nav.more': { es: 'Más', en: 'More', pt: 'Mais', it: 'Altro', fr: 'Plus', de: 'Mehr' },
+  'nav.transactions.short': { es: 'Movs', en: 'Txns', pt: 'Movs', it: 'Mov.', fr: 'Mvts', de: 'Buch.' },
+  'nav.goals.short': { es: 'Metas', en: 'Goals', pt: 'Metas', it: 'Obiett.', fr: 'Objectifs', de: 'Ziele' },
+  'sidebar.greeting': { es: 'Hola, {name}', en: 'Hi, {name}', pt: 'Olá, {name}', it: 'Ciao, {name}', fr: 'Salut, {name}', de: 'Hallo, {name}' },
+  'sidebar.didYouKnowTitle': { es: '💡 ¿Sabías qué?', en: '💡 Did you know?', pt: '💡 Sabias que?', it: '💡 Lo sapevi?', fr: '💡 Le saviez-vous ?', de: '💡 Wusstest du schon?' },
+  'sidebar.didYouKnowText': {
+    es: '"Kakeibo" (家計簿) significa "libro de cuentas del hogar". Se usa en Japón desde 1904 para ahorrar con conciencia, no con privación.',
+    en: '"Kakeibo" (家計簿) means "household account book". It has been used in Japan since 1904 to save with awareness, not deprivation.',
+    pt: '"Kakeibo" (家計簿) significa "livro de contas do lar". É usado no Japão desde 1904 para poupar com consciência, não com privação.',
+    it: '"Kakeibo" (家計簿) significa "libro dei conti di casa". Si usa in Giappone dal 1904 per risparmiare con consapevolezza, non con privazioni.',
+    fr: '«Kakeibo» (家計簿) signifie «livre de comptes du foyer». Utilisé au Japon depuis 1904 pour épargner en conscience, sans privation.',
+    de: '„Kakeibo“ (家計簿) bedeutet „Haushaltsbuch“. Es wird in Japan seit 1904 genutzt, um bewusst zu sparen – nicht durch Verzicht.',
+  },
+  'sidebar.whatsNew': { es: 'Novedades', en: "What's new", pt: 'Novidades', it: 'Novità', fr: 'Nouveautés', de: 'Neuigkeiten' },
+  'topbar.addTransaction': { es: 'Añadir movimiento', en: 'Add transaction', pt: 'Adicionar movimento', it: 'Aggiungi movimento', fr: 'Ajouter un mouvement', de: 'Buchung hinzufügen' },
+  'topbar.days': { es: 'días', en: 'days', pt: 'dias', it: 'giorni', fr: 'jours', de: 'Tage' },
+
+  // ---------- Onboarding ----------
+  'onboarding.welcome': { es: 'Bienvenido a Kakeibo', en: 'Welcome to Kakeibo', pt: 'Bem-vindo ao Kakeibo', it: 'Benvenuto su Kakeibo', fr: 'Bienvenue sur Kakeibo', de: 'Willkommen bei Kakeibo' },
+  'onboarding.subtitle': {
+    es: '家計簿 · El arte japonés de llevar las cuentas con calma, sin culpa, con propósito. Vamos a ayudarte a llegar a tus metas, un día a la vez.',
+    en: '家計簿 · The Japanese art of keeping accounts calmly, without guilt, with purpose. We’ll help you reach your goals, one day at a time.',
+    pt: '家計簿 · A arte japonesa de fazer contas com calma, sem culpa, com propósito. Vamos ajudar-te a chegar às tuas metas, um dia de cada vez.',
+    it: '家計簿 · L’arte giapponese di tenere i conti con calma, senza sensi di colpa, con uno scopo. Ti aiuteremo a raggiungere i tuoi obiettivi, un giorno alla volta.',
+    fr: '家計簿 · L’art japonais de tenir ses comptes avec calme, sans culpabilité, avec un but. On va t’aider à atteindre tes objectifs, un jour à la fois.',
+    de: '家計簿 · Die japanische Kunst, Buch zu führen – ruhig, ohne Schuldgefühle, mit Sinn. Wir helfen dir, deine Ziele Schritt für Schritt zu erreichen.',
+  },
+  'onboarding.namePlaceholder': { es: '¿Cómo te llamas?', en: 'What’s your name?', pt: 'Como te chamas?', it: 'Come ti chiami?', fr: 'Comment tu t’appelles ?', de: 'Wie heißt du?' },
+  'onboarding.continue': { es: 'Continuar →', en: 'Continue →', pt: 'Continuar →', it: 'Continua →', fr: 'Continuer →', de: 'Weiter →' },
+  'onboarding.chooseTheme': { es: 'Elige tu ambiente', en: 'Choose your vibe', pt: 'Escolhe o teu ambiente', it: 'Scegli la tua atmosfera', fr: 'Choisis ton ambiance', de: 'Wähle deine Stimmung' },
+  'onboarding.chooseThemeSub': { es: 'Podrás cambiarlo cuando quieras en Ajustes', en: 'You can change it anytime in Settings', pt: 'Podes mudar quando quiseres nas Definições', it: 'Potrai cambiarla quando vuoi nelle Impostazioni', fr: 'Tu pourras le changer à tout moment dans les Réglages', de: 'Du kannst das jederzeit in den Einstellungen ändern' },
+  'onboarding.start': { es: '¡Empezar! 🌱', en: 'Let’s go! 🌱', pt: 'Vamos lá! 🌱', it: 'Iniziamo! 🌱', fr: 'C’est parti ! 🌱', de: 'Los geht’s! 🌱' },
+
+  // ---------- Panel ----------
+  'dashboard.subtitle': { es: 'Así va tu dinero este mes', en: 'Here’s how your money is doing this month', pt: 'Assim está o teu dinheiro este mês', it: 'Ecco come vanno i tuoi soldi questo mese', fr: 'Voici où en est ton argent ce mois-ci', de: 'So läuft dein Geld diesen Monat' },
+  'dashboard.income': { es: 'Ingresos', en: 'Income', pt: 'Receitas', it: 'Entrate', fr: 'Revenus', de: 'Einnahmen' },
+  'dashboard.expenses': { es: 'Gastos', en: 'Expenses', pt: 'Despesas', it: 'Spese', fr: 'Dépenses', de: 'Ausgaben' },
+  'dashboard.balance': { es: 'Balance', en: 'Balance', pt: 'Saldo', it: 'Saldo', fr: 'Solde', de: 'Saldo' },
+  'dashboard.savedInGoals': { es: 'Ahorrado en metas', en: 'Saved toward goals', pt: 'Poupado em metas', it: 'Risparmiato per obiettivi', fr: 'Épargné pour tes objectifs', de: 'Für Ziele gespart' },
+  'dashboard.expensesByCategory': { es: '🍩 Gastos por categoría', en: '🍩 Expenses by category', pt: '🍩 Despesas por categoria', it: '🍩 Spese per categoria', fr: '🍩 Dépenses par catégorie', de: '🍩 Ausgaben nach Kategorie' },
+  'dashboard.noExpensesYet': { es: 'Aún no hay gastos este mes. ¡Añade tu primer movimiento!', en: 'No expenses yet this month. Add your first transaction!', pt: 'Ainda não há despesas este mês. Adiciona o teu primeiro movimento!', it: 'Ancora nessuna spesa questo mese. Aggiungi il tuo primo movimento!', fr: 'Pas encore de dépenses ce mois-ci. Ajoute ton premier mouvement !', de: 'Noch keine Ausgaben diesen Monat. Füge deine erste Buchung hinzu!' },
+  'dashboard.activeGoal': { es: 'Objetivo activo', en: 'Active goal', pt: 'Meta ativa', it: 'Obiettivo attivo', fr: 'Objectif en cours', de: 'Aktives Ziel' },
+  'dashboard.createFirstGoal': { es: '✨ Crea tu primer objetivo (coche, boda, viaje…)', en: '✨ Create your first goal (car, wedding, trip…)', pt: '✨ Cria a tua primeira meta (carro, casamento, viagem…)', it: '✨ Crea il tuo primo obiettivo (auto, matrimonio, viaggio…)', fr: '✨ Crée ton premier objectif (voiture, mariage, voyage…)', de: '✨ Erstelle dein erstes Ziel (Auto, Hochzeit, Reise…)' },
+  'dashboard.trend': { es: '📊 Tendencia (6 meses)', en: '📊 Trend (6 months)', pt: '📊 Tendência (6 meses)', it: '📊 Andamento (6 mesi)', fr: '📊 Tendance (6 mois)', de: '📊 Verlauf (6 Monate)' },
+  'dashboard.recentTransactions': { es: '🕘 Movimientos recientes', en: '🕘 Recent transactions', pt: '🕘 Movimentos recentes', it: '🕘 Movimenti recenti', fr: '🕘 Mouvements récents', de: '🕘 Letzte Buchungen' },
+  'dashboard.viewAll': { es: 'Ver todos →', en: 'View all →', pt: 'Ver todos →', it: 'Vedi tutti →', fr: 'Voir tout →', de: 'Alle ansehen →' },
+  'dashboard.noTransactionsYet': { es: 'Aún no hay movimientos. ¡Pulsa "Añadir movimiento" para empezar! 🌱', en: 'No transactions yet. Tap "Add transaction" to start! 🌱', pt: 'Ainda não há movimentos. Toca em "Adicionar movimento" para começar! 🌱', it: 'Ancora nessun movimento. Tocca "Aggiungi movimento" per iniziare! 🌱', fr: 'Pas encore de mouvements. Appuie sur «Ajouter un mouvement» pour commencer ! 🌱', de: 'Noch keine Buchungen. Tippe auf „Buchung hinzufügen“, um loszulegen! 🌱' },
+
+  // ---------- Hoy puedes gastar ----------
+  'allowance.titleOk': { es: 'Hoy puedes gastar', en: 'You can spend today', pt: 'Hoje podes gastar', it: 'Oggi puoi spendere', fr: 'Aujourd’hui tu peux dépenser', de: 'Heute kannst du ausgeben' },
+  'allowance.titleOver': { es: 'Este mes', en: 'This month', pt: 'Este mês', it: 'Questo mese', fr: 'Ce mois-ci', de: 'Diesen Monat' },
+  'allowance.overAmount': { es: '{amount} por encima de tus ingresos', en: '{amount} above your income', pt: '{amount} acima da tua receita', it: '{amount} oltre le tue entrate', fr: '{amount} au-delà de tes revenus', de: '{amount} über deinem Einkommen' },
+  'allowance.overMsg': { es: '🍵 Sin culpa — es solo información. Hoy puede ser un buen día para frenar un poco y volver a tu ritmo.', en: '🍵 No guilt — it’s just information. Today could be a good day to ease off and get back on track.', pt: '🍵 Sem culpa — é só informação. Hoje pode ser um bom dia para abrandar um pouco e voltar ao teu ritmo.', it: '🍵 Senza sensi di colpa — è solo un’informazione. Oggi può essere un buon giorno per rallentare un po’ e ritrovare il tuo ritmo.', fr: '🍵 Sans culpabilité — c’est juste une information. Aujourd’hui est peut-être un bon jour pour ralentir un peu et retrouver ton rythme.', de: '🍵 Kein schlechtes Gewissen – es ist nur eine Information. Heute ist vielleicht ein guter Tag, um kürzerzutreten und wieder in deinen Rhythmus zu finden.' },
+  'allowance.perDay': { es: 'cada día, durante los {days} días que quedan de mes, para llegar sin pasarte', en: 'each day, for the {days} days left this month, to make it without overspending', pt: 'por dia, durante os {days} dias que faltam do mês, para chegares sem te passares', it: 'al giorno, per i {days} giorni rimasti del mese, per arrivare senza sforare', fr: 'par jour, pendant les {days} jours restants du mois, pour finir sans dépasser', de: 'pro Tag, für die verbleibenden {days} Tage des Monats, um ohne Überschreitung auszukommen' },
+  'allowance.goalHint': { es: 'Para llegar a {goal} a tiempo, intenta ahorrar {amount}/día', en: 'To reach {goal} in time, try to save {amount}/day', pt: 'Para chegares a {goal} a tempo, tenta poupar {amount}/dia', it: 'Per raggiungere {goal} in tempo, prova a risparmiare {amount}/giorno', fr: 'Pour atteindre {goal} à temps, essaie d’épargner {amount}/jour', de: 'Um {goal} rechtzeitig zu erreichen, versuch {amount}/Tag zu sparen' },
+  'allowance.noIncomeTitle': { es: 'Aún no lo sabemos', en: 'We don’t know yet', pt: 'Ainda não sabemos', it: 'Non lo sappiamo ancora', fr: 'On ne sait pas encore', de: 'Wir wissen es noch nicht' },
+  'allowance.noIncomeMsg': { es: 'Añade tu primer ingreso del mes y te decimos cuánto puedes gastar hoy.', en: 'Add your first income this month and we’ll tell you how much you can spend today.', pt: 'Adiciona a tua primeira receita do mês e dizemos-te quanto podes gastar hoje.', it: 'Aggiungi la tua prima entrata del mese e ti diremo quanto puoi spendere oggi.', fr: 'Ajoute ton premier revenu du mois et on te dira combien tu peux dépenser aujourd’hui.', de: 'Füge deine erste Einnahme diesen Monat hinzu, dann sagen wir dir, wie viel du heute ausgeben kannst.' },
+  'allowance.addIncomeCta': { es: '+ Añadir ingreso', en: '+ Add income', pt: '+ Adicionar receita', it: '+ Aggiungi entrata', fr: '+ Ajouter un revenu', de: '+ Einnahme hinzufügen' },
+
+  // ---------- Presupuestos ----------
+  'budgets.title': { es: '🎯 Presupuestos del mes', en: '🎯 This month’s budgets', pt: '🎯 Orçamentos do mês', it: '🎯 Budget del mese', fr: '🎯 Budgets du mois', de: '🎯 Budgets diesen Monat' },
+  'budgets.titleEmpty': { es: '🎯 Presupuestos', en: '🎯 Budgets', pt: '🎯 Orçamentos', it: '🎯 Budget', fr: '🎯 Budgets', de: '🎯 Budgets' },
+  'budgets.emptyText': { es: 'Ponle un límite mensual a tus categorías y te avisamos con colores cuando te acerques.', en: 'Set a monthly limit for your categories and we’ll warn you with colors as you approach it.', pt: 'Define um limite mensal para as tuas categorias e avisamos-te com cores quando te aproximares.', it: 'Imposta un limite mensile per le tue categorie e ti avviseremo con i colori quando ti avvicini.', fr: 'Fixe une limite mensuelle à tes catégories, on t’alertera par des couleurs quand tu t’en approches.', de: 'Setze ein monatliches Limit für deine Kategorien – wir warnen dich farblich, wenn du dich näherst.' },
+  'budgets.configure': { es: 'Configurar presupuestos →', en: 'Set up budgets →', pt: 'Configurar orçamentos →', it: 'Configura i budget →', fr: 'Configurer les budgets →', de: 'Budgets einrichten →' },
+  'budgets.edit': { es: 'Editar →', en: 'Edit →', pt: 'Editar →', it: 'Modifica →', fr: 'Modifier →', de: 'Bearbeiten →' },
+  'budgets.overBudget': { es: '⚠️ Te has pasado del presupuesto de {category}', en: '⚠️ You’ve gone over budget on {category}', pt: '⚠️ Ultrapassaste o orçamento de {category}', it: '⚠️ Hai superato il budget di {category}', fr: '⚠️ Tu as dépassé le budget de {category}', de: '⚠️ Du hast das Budget für {category} überschritten' },
+
+  // ---------- Movimientos ----------
+  'transactions.title': { es: 'Movimientos', en: 'Transactions', pt: 'Movimentos', it: 'Movimenti', fr: 'Mouvements', de: 'Buchungen' },
+  'transactions.subtitle': { es: 'Todo lo que has registrado hasta ahora · toca uno para editarlo', en: 'Everything you’ve logged so far · tap one to edit it', pt: 'Tudo o que registaste até agora · toca num para editar', it: 'Tutto ciò che hai registrato finora · tocca per modificarlo', fr: 'Tout ce que tu as enregistré jusqu’ici · touche-en un pour le modifier', de: 'Alles, was du bisher erfasst hast · tippe eine Buchung an, um sie zu bearbeiten' },
+  'transactions.all': { es: 'Todos', en: 'All', pt: 'Todos', it: 'Tutti', fr: 'Tous', de: 'Alle' },
+  'transactions.expenses': { es: '💸 Gastos', en: '💸 Expenses', pt: '💸 Despesas', it: '💸 Spese', fr: '💸 Dépenses', de: '💸 Ausgaben' },
+  'transactions.income': { es: '💰 Ingresos', en: '💰 Income', pt: '💰 Receitas', it: '💰 Entrate', fr: '💰 Revenus', de: '💰 Einnahmen' },
+  'transactions.empty': { es: 'Todavía no hay movimientos aquí.', en: 'No transactions here yet.', pt: 'Ainda não há movimentos aqui.', it: 'Ancora nessun movimento qui.', fr: 'Pas encore de mouvements ici.', de: 'Hier gibt es noch keine Buchungen.' },
+  'transactions.list': { es: '📋 Lista', en: '📋 List', pt: '📋 Lista', it: '📋 Elenco', fr: '📋 Liste', de: '📋 Liste' },
+  'transactions.calendar': { es: '📅 Calendario', en: '📅 Calendar', pt: '📅 Calendário', it: '📅 Calendario', fr: '📅 Calendrier', de: '📅 Kalender' },
+
+  // ---------- Formulario de movimiento ----------
+  'txform.titleNew': { es: 'Nuevo movimiento', en: 'New transaction', pt: 'Novo movimento', it: 'Nuovo movimento', fr: 'Nouveau mouvement', de: 'Neue Buchung' },
+  'txform.titleEdit': { es: 'Editar movimiento', en: 'Edit transaction', pt: 'Editar movimento', it: 'Modifica movimento', fr: 'Modifier le mouvement', de: 'Buchung bearbeiten' },
+  'txform.expense': { es: '💸 Gasto', en: '💸 Expense', pt: '💸 Despesa', it: '💸 Spesa', fr: '💸 Dépense', de: '💸 Ausgabe' },
+  'txform.income': { es: '💰 Ingreso', en: '💰 Income', pt: '💰 Receita', it: '💰 Entrata', fr: '💰 Revenu', de: '💰 Einnahme' },
+  'txform.amount': { es: 'Cantidad', en: 'Amount', pt: 'Valor', it: 'Importo', fr: 'Montant', de: 'Betrag' },
+  'txform.category': { es: 'Categoría', en: 'Category', pt: 'Categoria', it: 'Categoria', fr: 'Catégorie', de: 'Kategorie' },
+  'txform.incomeSource': { es: 'Origen del ingreso', en: 'Income source', pt: 'Origem da receita', it: 'Origine dell’entrata', fr: 'Origine du revenu', de: 'Einnahmequelle' },
+  'txform.date': { es: 'Fecha', en: 'Date', pt: 'Data', it: 'Data', fr: 'Date', de: 'Datum' },
+  'txform.note': { es: 'Nota (opcional)', en: 'Note (optional)', pt: 'Nota (opcional)', it: 'Nota (facoltativa)', fr: 'Note (facultatif)', de: 'Notiz (optional)' },
+  'txform.notePlaceholder': { es: 'Ej: cena con amigos', en: 'E.g.: dinner with friends', pt: 'Ex: jantar com amigos', it: 'Es: cena con amici', fr: 'Ex : dîner entre amis', de: 'Z. B.: Abendessen mit Freunden' },
+  'txform.showDetails': { es: '↓ Añadir método de pago y lugar', en: '↓ Add payment method and place', pt: '↓ Adicionar método de pagamento e local', it: '↓ Aggiungi metodo di pagamento e luogo', fr: '↓ Ajouter le moyen de paiement et le lieu', de: '↓ Zahlungsmethode und Ort hinzufügen' },
+  'txform.hideDetails': { es: '↑ Ocultar detalles', en: '↑ Hide details', pt: '↑ Ocultar detalhes', it: '↑ Nascondi dettagli', fr: '↑ Masquer les détails', de: '↑ Details ausblenden' },
+  'txform.paymentMethod': { es: 'Método de pago', en: 'Payment method', pt: 'Método de pagamento', it: 'Metodo di pagamento', fr: 'Moyen de paiement', de: 'Zahlungsmethode' },
+  'txform.place': { es: 'Lugar (opcional)', en: 'Place (optional)', pt: 'Local (opcional)', it: 'Luogo (facoltativo)', fr: 'Lieu (facultatif)', de: 'Ort (optional)' },
+  'txform.placePlaceholder': { es: 'Ej: Panadería López, Mercadona…', en: 'E.g.: Local bakery, supermarket…', pt: 'Ex: Padaria López, supermercado…', it: 'Es: Panetteria López, supermercato…', fr: 'Ex : Boulangerie López, supermarché…', de: 'Z. B.: Bäckerei Müller, Supermarkt…' },
+  'txform.saveNew': { es: 'Guardar movimiento', en: 'Save transaction', pt: 'Guardar movimento', it: 'Salva movimento', fr: 'Enregistrer le mouvement', de: 'Buchung speichern' },
+  'txform.saveEdit': { es: 'Guardar cambios', en: 'Save changes', pt: 'Guardar alterações', it: 'Salva modifiche', fr: 'Enregistrer les modifications', de: 'Änderungen speichern' },
+  'paymentMethod.tarjeta': { es: 'Tarjeta', en: 'Card', pt: 'Cartão', it: 'Carta', fr: 'Carte', de: 'Karte' },
+  'paymentMethod.efectivo': { es: 'Efectivo', en: 'Cash', pt: 'Dinheiro', it: 'Contanti', fr: 'Espèces', de: 'Bargeld' },
+  'paymentMethod.movil': { es: 'Móvil', en: 'Mobile', pt: 'Telemóvel', it: 'Cellulare', fr: 'Mobile', de: 'Handy' },
+  'paymentMethod.transferencia': { es: 'Transferencia', en: 'Transfer', pt: 'Transferência', it: 'Bonifico', fr: 'Virement', de: 'Überweisung' },
+  'txform.amountError': { es: 'Pon una cantidad mayor que 0', en: 'Enter an amount greater than 0', pt: 'Indica um valor maior que 0', it: 'Inserisci un importo maggiore di 0', fr: 'Indique un montant supérieur à 0', de: 'Gib einen Betrag größer als 0 ein' },
+
+  // ---------- Objetivos ----------
+  'goals.title': { es: 'Objetivos', en: 'Goals', pt: 'Objetivos', it: 'Obiettivi', fr: 'Objectifs', de: 'Ziele' },
+  'goals.subtitle': { es: 'Tu coche, tu boda, tu viaje soñado… un paso a la vez', en: 'Your car, your wedding, your dream trip… one step at a time', pt: 'O teu carro, o teu casamento, a tua viagem de sonho… um passo de cada vez', it: 'La tua auto, il tuo matrimonio, il tuo viaggio dei sogni… un passo alla volta', fr: 'Ta voiture, ton mariage, ton voyage de rêve… un pas à la fois', de: 'Dein Auto, deine Hochzeit, deine Traumreise … Schritt für Schritt' },
+  'goals.add': { es: '+ Objetivo', en: '+ Goal', pt: '+ Objetivo', it: '+ Obiettivo', fr: '+ Objectif', de: '+ Ziel' },
+  'goals.emptyTitle': { es: 'Aún no tienes objetivos', en: 'You don’t have any goals yet', pt: 'Ainda não tens metas', it: 'Non hai ancora obiettivi', fr: 'Tu n’as pas encore d’objectifs', de: 'Du hast noch keine Ziele' },
+  'goals.emptyText': { es: 'Crea uno y ve tu progreso crecer cada vez que ahorres.', en: 'Create one and watch your progress grow every time you save.', pt: 'Cria uma e vê o teu progresso crescer sempre que poupares.', it: 'Creane uno e guarda i tuoi progressi crescere ogni volta che risparmi.', fr: 'Crée-en un et regarde ta progression grandir à chaque épargne.', de: 'Erstelle eines und beobachte, wie dein Fortschritt mit jedem Sparbetrag wächst.' },
+  'goals.achieved': { es: '🏆 Cumplidos', en: '🏆 Achieved', pt: '🏆 Concluídas', it: '🏆 Raggiunti', fr: '🏆 Atteints', de: '🏆 Erreicht' },
+  'goals.achievedBadge': { es: '🎉 ¡Objetivo cumplido!', en: '🎉 Goal achieved!', pt: '🎉 Meta alcançada!', it: '🎉 Obiettivo raggiunto!', fr: '🎉 Objectif atteint !', de: '🎉 Ziel erreicht!' },
+  'goals.daysLeft': { es: 'Quedan {days} días', en: '{days} days left', pt: 'Faltam {days} dias', it: 'Mancano {days} giorni', fr: 'Il reste {days} jours', de: 'Noch {days} Tage' },
+  'goals.overdue': { es: 'Venció hace {days} días', en: 'Overdue by {days} days', pt: 'Venceu há {days} dias', it: 'Scaduto da {days} giorni', fr: 'Dépassé de {days} jours', de: 'Seit {days} Tagen überfällig' },
+  'goals.remainingPrefix': { es: 'Te faltan', en: 'You need', pt: 'Faltam-te', it: 'Ti mancano', fr: 'Il te manque', de: 'Dir fehlen noch' },
+  'goals.addAmountPlaceholder': { es: 'Añadir {currency}', en: 'Add {currency}', pt: 'Adicionar {currency}', it: 'Aggiungi {currency}', fr: 'Ajouter {currency}', de: '{currency} hinzufügen' },
+  'goals.newTitle': { es: 'Nuevo objetivo', en: 'New goal', pt: 'Nova meta', it: 'Nuovo obiettivo', fr: 'Nouvel objectif', de: 'Neues Ziel' },
+  'goals.chooseIcon': { es: 'Elige un icono', en: 'Choose an icon', pt: 'Escolhe um ícone', it: 'Scegli un’icona', fr: 'Choisis une icône', de: 'Wähle ein Symbol' },
+  'goals.moreIcons': { es: '↓ Ver más iconos', en: '↓ See more icons', pt: '↓ Ver mais ícones', it: '↓ Vedi altre icone', fr: '↓ Voir plus d’icônes', de: '↓ Weitere Symbole anzeigen' },
+  'goals.fewerIcons': { es: '↑ Ocultar iconos', en: '↑ Hide icons', pt: '↑ Ocultar ícones', it: '↑ Nascondi icone', fr: '↑ Masquer les icônes', de: '↑ Symbole ausblenden' },
+  'goals.whatGoal': { es: '¿Cuál es tu meta?', en: 'What’s your goal?', pt: 'Qual é a tua meta?', it: 'Qual è il tuo obiettivo?', fr: 'Quel est ton objectif ?', de: 'Was ist dein Ziel?' },
+  'goals.goalPlaceholder': { es: 'Ej: Coche nuevo, Boda, Viaje a Japón…', en: 'E.g.: New car, Wedding, Trip to Japan…', pt: 'Ex: Carro novo, Casamento, Viagem ao Japão…', it: 'Es: Auto nuova, Matrimonio, Viaggio in Giappone…', fr: 'Ex : Nouvelle voiture, Mariage, Voyage au Japon…', de: 'Z. B.: Neues Auto, Hochzeit, Japanreise…' },
+  'goals.targetAmount': { es: 'Cantidad objetivo', en: 'Target amount', pt: 'Valor da meta', it: 'Importo obiettivo', fr: 'Montant cible', de: 'Zielbetrag' },
+  'goals.deadline': { es: 'Fecha límite (opcional)', en: 'Deadline (optional)', pt: 'Prazo (opcional)', it: 'Scadenza (facoltativa)', fr: 'Date limite (facultatif)', de: 'Frist (optional)' },
+  'goals.create': { es: 'Crear objetivo 🎯', en: 'Create goal 🎯', pt: 'Criar meta 🎯', it: 'Crea obiettivo 🎯', fr: 'Créer l’objectif 🎯', de: 'Ziel erstellen 🎯' },
+  'goals.deleteConfirm': { es: 'Eliminar objetivo', en: 'Delete goal', pt: 'Eliminar meta', it: 'Elimina obiettivo', fr: 'Supprimer l’objectif', de: 'Ziel löschen' },
+  'goals.nameError': { es: 'Ponle un nombre a tu objetivo', en: 'Give your goal a name', pt: 'Dá um nome à tua meta', it: 'Dai un nome al tuo obiettivo', fr: 'Donne un nom à ton objectif', de: 'Gib deinem Ziel einen Namen' },
+  'goals.amountError': { es: 'Pon una cantidad mayor que 0', en: 'Enter an amount greater than 0', pt: 'Indica um valor maior que 0', it: 'Inserisci un importo maggiore di 0', fr: 'Indique un montant supérieur à 0', de: 'Gib einen Betrag größer als 0 ein' },
+
+  // ---------- Logros ----------
+  'achievements.title': { es: 'Logros', en: 'Achievements', pt: 'Conquistas', it: 'Obiettivi sbloccati', fr: 'Succès', de: 'Erfolge' },
+  'achievements.subtitle': { es: 'Tu álbum de pegatinas del ahorro', en: 'Your savings sticker album', pt: 'O teu álbum de autocolantes de poupança', it: 'Il tuo album di adesivi del risparmio', fr: 'Ton album d’autocollants de l’épargne', de: 'Dein Sparkleber-Album' },
+  'achievements.xpToNext': { es: '{xp} XP para ser {emoji} {title}', en: '{xp} XP to become {emoji} {title}', pt: '{xp} XP para seres {emoji} {title}', it: '{xp} XP per diventare {emoji} {title}', fr: '{xp} XP pour devenir {emoji} {title}', de: '{xp} XP bis {emoji} {title}' },
+  'achievements.maxRank': { es: '¡Rango máximo alcanzado! 🐉', en: 'Max rank reached! 🐉', pt: 'Nível máximo alcançado! 🐉', it: 'Grado massimo raggiunto! 🐉', fr: 'Rang maximum atteint ! 🐉', de: 'Höchster Rang erreicht! 🐉' },
+  'achievements.streak': { es: 'racha actual 🔥 {streak} días', en: 'current streak 🔥 {streak} days', pt: 'sequência atual 🔥 {streak} dias', it: 'serie attuale 🔥 {streak} giorni', fr: 'série actuelle 🔥 {streak} jours', de: 'aktuelle Serie 🔥 {streak} Tage' },
+  'achievements.unlocked': { es: '¡Logro desbloqueado!', en: 'Achievement unlocked!', pt: 'Conquista desbloqueada!', it: 'Obiettivo sbloccato!', fr: 'Succès débloqué !', de: 'Erfolg freigeschaltet!' },
+
+  // ---------- Reflexión ----------
+  'reflection.title': { es: '🧘 Reflexión Kakeibo', en: '🧘 Kakeibo reflection', pt: '🧘 Reflexão Kakeibo', it: '🧘 Riflessione Kakeibo', fr: '🧘 Réflexion Kakeibo', de: '🧘 Kakeibo-Reflexion' },
+  'reflection.subtitle': { es: 'Dos minutos una vez al mes para saber si vas hacia donde querías ir.', en: 'Two minutes once a month to see if you’re heading where you wanted to go.', pt: 'Dois minutos uma vez por mês para saberes se vais na direção certa.', it: 'Due minuti una volta al mese per capire se stai andando dove volevi.', fr: 'Deux minutes par mois pour savoir si tu vas où tu voulais aller.', de: 'Zwei Minuten im Monat, um zu sehen, ob du auf dem richtigen Weg bist.' },
+  'reflection.whyToggle': { es: '💡 ¿Para qué sirve exactamente esto?', en: '💡 What is this actually for?', pt: '💡 Para que serve exatamente isto?', it: '💡 A cosa serve esattamente questo?', fr: '💡 À quoi ça sert exactement ?', de: '💡 Wofür ist das eigentlich gut?' },
+  'reflection.whyText': {
+    es: 'Es el corazón del método kakeibo original de 1904: antes de gastar sin pensar y arrepentirte después, respondes 4 preguntas cortas. No es para sentirte mal por lo que has gastado — es para ver con datos, no con sensaciones, si el mes va como querías, y decidir una sola cosa concreta a mejorar el mes que viene. La app hace las cuentas por ti; tú solo decides.',
+    en: 'This is the heart of the original 1904 kakeibo method: instead of spending mindlessly and regretting it later, you answer 4 short questions. It’s not about feeling bad for what you spent — it’s about seeing with data, not feelings, whether the month is going as planned, and deciding on one concrete thing to improve next month. The app does the math; you just decide.',
+    pt: 'É o coração do método kakeibo original de 1904: em vez de gastar sem pensar e arrepender-te depois, respondes a 4 perguntas curtas. Não é para te sentires mal com o que gastaste — é para veres com dados, não sensações, se o mês está a correr como querias, e decidires uma única coisa concreta a melhorar no mês seguinte. A app faz as contas; tu só decides.',
+    it: 'È il cuore del metodo kakeibo originale del 1904: invece di spendere senza pensare e pentirtene dopo, rispondi a 4 brevi domande. Non serve a farti sentire in colpa per ciò che hai speso — serve a vedere con i dati, non con le sensazioni, se il mese sta andando come volevi, e a decidere una sola cosa concreta da migliorare il mese prossimo. L’app fa i conti per te; tu decidi soltanto.',
+    fr: 'C’est le cœur de la méthode kakeibo originale de 1904 : plutôt que de dépenser sans réfléchir et le regretter après, tu réponds à 4 courtes questions. Il ne s’agit pas de culpabiliser sur tes dépenses, mais de voir avec des données, pas des impressions, si le mois se passe comme prévu, et de décider d’une seule chose concrète à améliorer le mois prochain. L’appli fait les calculs ; toi, tu décides.',
+    de: 'Das ist der Kern der ursprünglichen Kakeibo-Methode von 1904: Statt gedankenlos auszugeben und es später zu bereuen, beantwortest du 4 kurze Fragen. Es geht nicht darum, sich schlecht zu fühlen – sondern mit Daten statt Gefühl zu sehen, ob der Monat so läuft wie geplant, und eine konkrete Sache für nächsten Monat zu verbessern. Die App rechnet; du entscheidest.',
+  },
+  'reflection.q1': { es: '1️⃣ ¿Cuánto dinero tienes disponible este mes?', en: '1️⃣ How much money do you have available this month?', pt: '1️⃣ Quanto dinheiro tens disponível este mês?', it: '1️⃣ Quanti soldi hai disponibili questo mese?', fr: '1️⃣ Combien d’argent as-tu de disponible ce mois-ci ?', de: '1️⃣ Wie viel Geld hast du diesen Monat zur Verfügung?' },
+  'reflection.q1sub': { es: 'Lo que ingresas, sin contar gastos fijos que no puedes evitar.', en: 'What you earn, not counting fixed expenses you can’t avoid.', pt: 'O que recebes, sem contar despesas fixas inevitáveis.', it: 'Quello che guadagni, senza contare le spese fisse inevitabili.', fr: 'Ce que tu gagnes, hors charges fixes incontournables.', de: 'Was du einnimmst, ohne unvermeidbare Fixkosten.' },
+  'reflection.q2': { es: '2️⃣ ¿Cuánto te gustaría ahorrar?', en: '2️⃣ How much would you like to save?', pt: '2️⃣ Quanto gostarias de poupar?', it: '2️⃣ Quanto vorresti risparmiare?', fr: '2️⃣ Combien aimerais-tu épargner ?', de: '2️⃣ Wie viel möchtest du sparen?' },
+  'reflection.q2sub': { es: 'Tu objetivo del mes, el que tú decidas.', en: 'Your goal for the month, whatever you decide.', pt: 'A tua meta do mês, a que decidires.', it: 'Il tuo obiettivo del mese, quello che decidi tu.', fr: 'Ton objectif du mois, celui que tu choisis.', de: 'Dein Ziel für den Monat, ganz nach deiner Wahl.' },
+  'reflection.q3': { es: '3️⃣ ¿Cuánto estás gastando realmente?', en: '3️⃣ How much are you actually spending?', pt: '3️⃣ Quanto estás realmente a gastar?', it: '3️⃣ Quanto stai davvero spendendo?', fr: '3️⃣ Combien dépenses-tu réellement ?', de: '3️⃣ Wie viel gibst du wirklich aus?' },
+  'reflection.q3sub': { es: '(sumado solo de tus movimientos — no hace falta que lo calcules tú)', en: '(summed straight from your transactions — no need to calculate it yourself)', pt: '(somado a partir dos teus movimentos — não precisas de calcular)', it: '(sommato direttamente dai tuoi movimenti — non serve calcolarlo tu)', fr: '(calculé automatiquement à partir de tes mouvements — pas besoin de le faire toi-même)', de: '(automatisch aus deinen Buchungen berechnet – du musst nichts selbst rechnen)' },
+  'reflection.q4': { es: '4️⃣ ¿Cómo puedes mejorar el mes que viene?', en: '4️⃣ How can you improve next month?', pt: '4️⃣ Como podes melhorar no próximo mês?', it: '4️⃣ Come puoi migliorare il mese prossimo?', fr: '4️⃣ Comment peux-tu t’améliorer le mois prochain ?', de: '4️⃣ Wie kannst du dich nächsten Monat verbessern?' },
+  'reflection.q4sub': { es: 'Una sola idea concreta basta — no hace falta una lista.', en: 'Just one concrete idea is enough — no need for a list.', pt: 'Basta uma ideia concreta — não precisas de uma lista.', it: 'Basta un’unica idea concreta — non serve un elenco.', fr: 'Une seule idée concrète suffit — pas besoin d’une liste.', de: 'Eine einzige konkrete Idee reicht – keine Liste nötig.' },
+  'reflection.q4placeholder': { es: 'Ej: Cocinar más en casa, cancelar una suscripción que no uso…', en: 'E.g.: Cook at home more, cancel a subscription I don’t use…', pt: 'Ex: Cozinhar mais em casa, cancelar uma subscrição que não uso…', it: 'Es: Cucinare più spesso a casa, disdire un abbonamento che non uso…', fr: 'Ex : Cuisiner plus souvent à la maison, résilier un abonnement inutilisé…', de: 'Z. B.: Öfter zu Hause kochen, ein ungenutztes Abo kündigen…' },
+  'reflection.onTrack': { es: '✅ Vas bien', en: '✅ You’re on track', pt: '✅ Estás bem encaminhado', it: '✅ Sei sulla buona strada', fr: '✅ Tu es sur la bonne voie', de: '✅ Du bist auf Kurs' },
+  'reflection.offTrack': { es: '⚠️ Te estás desviando un poco', en: '⚠️ You’re drifting a little', pt: '⚠️ Estás a desviar-te um pouco', it: '⚠️ Ti stai un po’ allontanando', fr: '⚠️ Tu t’écartes un peu', de: '⚠️ Du kommst etwas vom Kurs ab' },
+  'reflection.verdict': {
+    es: 'A este ritmo, este mes ahorrarás {saved} — eso es {diff} {direction} de lo que querías ahorrar este mes.',
+    en: 'At this pace, you’ll save {saved} this month — that’s {diff} {direction} what you wanted to save.',
+    pt: 'A este ritmo, vais poupar {saved} este mês — isso é {diff} {direction} do que querias poupar.',
+    it: 'A questo ritmo, risparmierai {saved} questo mese — cioè {diff} {direction} di quanto volevi risparmiare.',
+    fr: 'À ce rythme, tu épargneras {saved} ce mois-ci — soit {diff} {direction} que ce que tu voulais épargner.',
+    de: 'In diesem Tempo sparst du diesen Monat {saved} – das sind {diff} {direction} als du sparen wolltest.',
+  },
+  'reflection.more': { es: 'más', en: 'more', pt: 'mais', it: 'in più', fr: 'de plus', de: 'mehr' },
+  'reflection.less': { es: 'menos', en: 'less', pt: 'menos', it: 'in meno', fr: 'de moins', de: 'weniger' },
+  'reflection.save': { es: 'Guardar reflexión del mes', en: 'Save this month’s reflection', pt: 'Guardar reflexão do mês', it: 'Salva la riflessione del mese', fr: 'Enregistrer la réflexion du mois', de: 'Monatsreflexion speichern' },
+  'reflection.saved': { es: '¡Guardado! 🌸', en: 'Saved! 🌸', pt: 'Guardado! 🌸', it: 'Salvato! 🌸', fr: 'Enregistré ! 🌸', de: 'Gespeichert! 🌸' },
+  'reflection.history': { es: '📜 Historial', en: '📜 History', pt: '📜 Histórico', it: '📜 Cronologia', fr: '📜 Historique', de: '📜 Verlauf' },
+  'reflection.available': { es: 'Disponible', en: 'Available', pt: 'Disponível', it: 'Disponibile', fr: 'Disponible', de: 'Verfügbar' },
+  'reflection.savingsGoal': { es: 'Meta ahorro', en: 'Savings goal', pt: 'Meta de poupança', it: 'Obiettivo di risparmio', fr: 'Objectif d’épargne', de: 'Sparziel' },
+  'reflection.realExpense': { es: 'Gasto real', en: 'Actual spend', pt: 'Despesa real', it: 'Spesa reale', fr: 'Dépense réelle', de: 'Tatsächliche Ausgaben' },
+
+  // ---------- Ajustes ----------
+  'settings.title': { es: 'Ajustes', en: 'Settings', pt: 'Definições', it: 'Impostazioni', fr: 'Réglages', de: 'Einstellungen' },
+  'settings.subtitle': { es: 'Haz de Kakeibo tu espacio', en: 'Make Kakeibo your own', pt: 'Torna o Kakeibo teu', it: 'Rendi Kakeibo tuo', fr: 'Fais de Kakeibo ton espace', de: 'Mach Kakeibo zu deinem' },
+  'settings.name': { es: 'Tu nombre', en: 'Your name', pt: 'O teu nome', it: 'Il tuo nome', fr: 'Ton prénom', de: 'Dein Name' },
+  'settings.namePlaceholder': { es: '¿Cómo te llamas?', en: 'What’s your name?', pt: 'Como te chamas?', it: 'Come ti chiami?', fr: 'Comment tu t’appelles ?', de: 'Wie heißt du?' },
+  'settings.currency': { es: 'Moneda', en: 'Currency', pt: 'Moeda', it: 'Valuta', fr: 'Devise', de: 'Währung' },
+  'settings.liveRate': { es: 'Cambio en vivo', en: 'Live rate', pt: 'Câmbio em direto', it: 'Cambio in tempo reale', fr: 'Taux en direct', de: 'Live-Kurs' },
+  'settings.mode': { es: 'Modo', en: 'Mode', pt: 'Modo', it: 'Modalità', fr: 'Mode', de: 'Modus' },
+  'settings.light': { es: '☀️ Claro', en: '☀️ Light', pt: '☀️ Claro', it: '☀️ Chiaro', fr: '☀️ Clair', de: '☀️ Hell' },
+  'settings.dark': { es: '🌙 Oscuro', en: '🌙 Dark', pt: '🌙 Escuro', it: '🌙 Scuro', fr: '🌙 Sombre', de: '🌙 Dunkel' },
+  'settings.theme': { es: 'Temática', en: 'Theme', pt: 'Tema', it: 'Tema', fr: 'Thème', de: 'Design' },
+  'settings.language': { es: 'Idioma', en: 'Language', pt: 'Idioma', it: 'Lingua', fr: 'Langue', de: 'Sprache' },
+  'settings.periodicGoal': { es: 'Meta periódica (opcional)', en: 'Recurring goal (optional)', pt: 'Meta periódica (opcional)', it: 'Obiettivo periodico (facoltativo)', fr: 'Objectif périodique (facultatif)', de: 'Wiederkehrendes Ziel (optional)' },
+  'settings.periodicGoalDesc': { es: 'Ponte una meta fija cada semana o cada mes — aparecerá como barra de progreso en el Panel.', en: 'Set a fixed goal every week or month — it’ll show as a progress bar on the Dashboard.', pt: 'Define uma meta fixa todas as semanas ou meses — aparece como barra de progresso no Painel.', it: 'Fissa un obiettivo settimanale o mensile — apparirà come barra di avanzamento nel Pannello.', fr: 'Fixe-toi un objectif chaque semaine ou chaque mois — il apparaîtra en barre de progression sur le Tableau de bord.', de: 'Setz dir ein festes Ziel pro Woche oder Monat – es erscheint als Fortschrittsbalken in der Übersicht.' },
+  'settings.saveAtLeast': { es: '🎯 Ahorrar al menos', en: '🎯 Save at least', pt: '🎯 Poupar pelo menos', it: '🎯 Risparmia almeno', fr: '🎯 Épargner au moins', de: '🎯 Mindestens sparen' },
+  'settings.spendAtMost': { es: '🚦 Gastar como máximo', en: '🚦 Spend at most', pt: '🚦 Gastar no máximo', it: '🚦 Spendi al massimo', fr: '🚦 Dépenser au maximum', de: '🚦 Höchstens ausgeben' },
+  'settings.weekly': { es: 'semanal', en: 'weekly', pt: 'semanal', it: 'settimanale', fr: 'hebdomadaire', de: 'wöchentlich' },
+  'settings.monthly': { es: 'mensual', en: 'monthly', pt: 'mensal', it: 'mensile', fr: 'mensuel', de: 'monatlich' },
+  'periodicgoal.savings': { es: '🎯 Meta de ahorro', en: '🎯 Savings goal', pt: '🎯 Meta de poupança', it: '🎯 Obiettivo di risparmio', fr: '🎯 Objectif d’épargne', de: '🎯 Sparziel' },
+  'periodicgoal.spendLimit': { es: '🚦 Límite de gasto', en: '🚦 Spending limit', pt: '🚦 Limite de despesa', it: '🚦 Limite di spesa', fr: '🚦 Limite de dépense', de: '🚦 Ausgabenlimit' },
+  'periodicgoal.thisWeek': { es: 'esta semana', en: 'this week', pt: 'esta semana', it: 'questa settimana', fr: 'cette semaine', de: 'diese Woche' },
+  'periodicgoal.thisMonth': { es: 'este mes', en: 'this month', pt: 'este mês', it: 'questo mese', fr: 'ce mois-ci', de: 'diesen Monat' },
+  'settings.categoriesTitle': { es: 'Tus categorías', en: 'Your categories', pt: 'As tuas categorias', it: 'Le tue categorie', fr: 'Tes catégories', de: 'Deine Kategorien' },
+  'settings.categoriesDesc': { es: 'Además de las de fábrica, crea las tuyas: mascota, gimnasio, tabaco, lo que gastes de verdad.', en: 'Besides the built-in ones, create your own: pet, gym, smoking, whatever you actually spend on.', pt: 'Além das predefinidas, cria as tuas: animal de estimação, ginásio, tabaco, o que realmente gastas.', it: 'Oltre a quelle predefinite, crea le tue: animale domestico, palestra, sigarette, quello che spendi davvero.', fr: 'En plus de celles par défaut, crée les tiennes : animal, salle de sport, tabac, ce que tu dépenses vraiment.', de: 'Erstelle neben den vorgegebenen auch eigene: Haustier, Fitnessstudio, Rauchen – was du wirklich ausgibst.' },
+  'settings.createCategory': { es: '+ Crear categoría', en: '+ Create category', pt: '+ Criar categoria', it: '+ Crea categoria', fr: '+ Créer une catégorie', de: '+ Kategorie erstellen' },
+  'settings.categoryNamePlaceholder': { es: 'Nombre de la categoría (ej: Gimnasio)', en: 'Category name (e.g.: Gym)', pt: 'Nome da categoria (ex: Ginásio)', it: 'Nome della categoria (es: Palestra)', fr: 'Nom de la catégorie (ex : Salle de sport)', de: 'Kategoriename (z. B. Fitnessstudio)' },
+  'category.editName': { es: 'Editar nombre', en: 'Edit name', pt: 'Editar nome', it: 'Modifica nome', fr: 'Modifier le nom', de: 'Namen bearbeiten' },
+  'category.deleteTitle': { es: 'Eliminar categoría', en: 'Delete category', pt: 'Eliminar categoria', it: 'Elimina categoria', fr: 'Supprimer la catégorie', de: 'Kategorie löschen' },
+  'category.deleteConfirmNoUse': { es: '¿Borrar la categoría "{name}"?', en: 'Delete category "{name}"?', pt: 'Eliminar a categoria "{name}"?', it: 'Eliminare la categoria "{name}"?', fr: 'Supprimer la catégorie « {name} » ?', de: 'Kategorie „{name}" löschen?' },
+  'category.deleteConfirmWithUse': { es: '¿Borrar la categoría "{name}"? Se verán afectados {count} movimientos, que pasarán a "Otros".', en: 'Delete category "{name}"? {count} transactions will be affected and moved to "Other".', pt: 'Eliminar a categoria "{name}"? {count} movimentos serão afetados e passam a "Outros".', it: 'Eliminare la categoria "{name}"? {count} movimenti saranno interessati e diventeranno "Altro".', fr: 'Supprimer la catégorie « {name} » ? {count} mouvements seront affectés et passeront en « Autres ».', de: 'Kategorie „{name}" löschen? {count} Buchungen sind betroffen und werden zu „Sonstiges".' },
+  'settings.budgetsTitle': { es: 'Presupuestos por categoría', en: 'Budgets by category', pt: 'Orçamentos por categoria', it: 'Budget per categoria', fr: 'Budgets par catégorie', de: 'Budgets nach Kategorie' },
+  'settings.budgetsDesc': { es: 'Ponle un límite mensual a las categorías que quieras vigilar. Déjalo en blanco para no controlar esa categoría.', en: 'Set a monthly limit on the categories you want to watch. Leave blank to not track a category.', pt: 'Define um limite mensal nas categorias que queres controlar. Deixa em branco para não controlar essa categoria.', it: 'Imposta un limite mensile per le categorie da monitorare. Lascia vuoto per non controllare quella categoria.', fr: 'Fixe une limite mensuelle aux catégories à surveiller. Laisse vide pour ne pas suivre une catégorie.', de: 'Setze ein monatliches Limit für Kategorien, die du im Blick behalten willst. Leer lassen, um eine Kategorie nicht zu überwachen.' },
+  'settings.dataTitle': { es: 'Tus datos', en: 'Your data', pt: 'Os teus dados', it: 'I tuoi dati', fr: 'Tes données', de: 'Deine Daten' },
+  'settings.dataDesc': { es: 'Todo se guarda solo en este ordenador (localStorage). Haz copias de seguridad de vez en cuando.', en: 'Everything is stored only on this computer (localStorage). Back it up from time to time.', pt: 'Tudo é guardado apenas neste computador (localStorage). Faz cópias de segurança de vez em quando.', it: 'Tutto è salvato solo su questo computer (localStorage). Fai un backup ogni tanto.', fr: 'Tout est stocké uniquement sur cet ordinateur (localStorage). Fais des sauvegardes de temps en temps.', de: 'Alles wird nur auf diesem Computer gespeichert (localStorage). Erstelle gelegentlich ein Backup.' },
+  'settings.exportJson': { es: '⬇️ Exportar backup (JSON)', en: '⬇️ Export backup (JSON)', pt: '⬇️ Exportar cópia (JSON)', it: '⬇️ Esporta backup (JSON)', fr: '⬇️ Exporter la sauvegarde (JSON)', de: '⬇️ Backup exportieren (JSON)' },
+  'settings.exportExcel': { es: '📊 Exportar a Excel', en: '📊 Export to Excel', pt: '📊 Exportar para Excel', it: '📊 Esporta in Excel', fr: '📊 Exporter vers Excel', de: '📊 Nach Excel exportieren' },
+  'settings.exporting': { es: 'Generando…', en: 'Generating…', pt: 'A gerar…', it: 'Generazione…', fr: 'Génération…', de: 'Wird erstellt…' },
+  'settings.importBackup': { es: '⬆️ Importar backup', en: '⬆️ Import backup', pt: '⬆️ Importar cópia', it: '⬆️ Importa backup', fr: '⬆️ Importer la sauvegarde', de: '⬆️ Backup importieren' },
+  'settings.deleteAll': { es: '🗑️ Borrar todo', en: '🗑️ Delete everything', pt: '🗑️ Apagar tudo', it: '🗑️ Cancella tutto', fr: '🗑️ Tout supprimer', de: '🗑️ Alles löschen' },
+
+  // ---------- Lista de la compra ----------
+  'shopping.title': { es: '🛒 Lista de la compra', en: '🛒 Shopping list', pt: '🛒 Lista de compras', it: '🛒 Lista della spesa', fr: '🛒 Liste de courses', de: '🛒 Einkaufsliste' },
+  'shopping.subtitle': { es: 'Dinámica y personal: apunta lo que necesitas, cuánto llevas encima y dónde te sale mejor.', en: 'Dynamic and personal: note what you need, how much cash you’re bringing, and where it’s cheapest.', pt: 'Dinâmica e pessoal: apunta o que precisas, quanto dinheiro levas e onde é mais barato.', it: 'Dinamica e personale: annota cosa ti serve, quanto contante porti e dove conviene di più.', fr: 'Dynamique et personnelle : note ce dont tu as besoin, combien tu emportes et où c’est le moins cher.', de: 'Dynamisch und persönlich: notiere, was du brauchst, wie viel Bargeld du mitnimmst und wo es am günstigsten ist.' },
+  'shopping.budgetLabel': { es: '💵 Dinero que quiero llevar (opcional)', en: '💵 Cash I want to bring (optional)', pt: '💵 Dinheiro que quero levar (opcional)', it: '💵 Contanti che voglio portare (facoltativo)', fr: '💵 Argent que je veux emporter (facultatif)', de: '💵 Bargeld, das ich mitnehmen will (optional)' },
+  'shopping.budgetDesc': { es: 'No hace falta que sepas el precio de cada cosa — pon solo cuánto llevas y ve viendo lo que te queda a medida que marcas lo que compras.', en: 'No need to know the price of everything — just set how much you’re bringing and watch what’s left as you check things off.', pt: 'Não precisas de saber o preço de cada coisa — define só quanto levas e vê o que resta à medida que marcas as compras.', it: 'Non serve conoscere il prezzo di ogni cosa — imposta solo quanto porti e guarda cosa resta man mano che spunti gli acquisti.', fr: 'Pas besoin de connaître le prix de chaque chose — indique juste combien tu emportes et regarde ce qu’il te reste au fur et à mesure.', de: 'Du musst nicht jeden Preis kennen – gib einfach an, wie viel du mitnimmst, und sieh, was übrig bleibt, während du abhakst.' },
+  'shopping.spent': { es: 'Ya llevas gastado', en: 'Spent so far', pt: 'Já gastaste', it: 'Già speso', fr: 'Déjà dépensé', de: 'Bisher ausgegeben' },
+  'shopping.remaining': { es: 'Te queda', en: 'Remaining', pt: 'Resta', it: 'Rimanente', fr: 'Il te reste', de: 'Verbleibend' },
+  'shopping.budget': { es: 'Presupuesto', en: 'Budget', pt: 'Orçamento', it: 'Budget', fr: 'Budget', de: 'Budget' },
+  'shopping.undefined': { es: 'Sin definir', en: 'Not set', pt: 'Não definido', it: 'Non definito', fr: 'Non défini', de: 'Nicht festgelegt' },
+  'shopping.itemPlaceholder': { es: '¿Qué necesitas? (ej: Leche)', en: 'What do you need? (e.g.: Milk)', pt: 'O que precisas? (ex: Leite)', it: 'Cosa ti serve? (es: Latte)', fr: 'De quoi as-tu besoin ? (ex : Lait)', de: 'Was brauchst du? (z. B. Milch)' },
+  'shopping.notePlaceholder': { es: 'Ej: Panadería López — más rico y más barato', en: 'E.g.: Local bakery — tastier and cheaper', pt: 'Ex: Padaria López — mais saboroso e mais barato', it: 'Es: Panetteria López — più buono e più economico', fr: 'Ex : Boulangerie López — meilleur et moins cher', de: 'Z. B.: Bäckerei Müller — besser und günstiger' },
+  'shopping.empty': { es: 'Tu lista está vacía. ¡Añade el primer producto!', en: 'Your list is empty. Add your first item!', pt: 'A tua lista está vazia. Adiciona o primeiro produto!', it: 'La tua lista è vuota. Aggiungi il primo prodotto!', fr: 'Ta liste est vide. Ajoute le premier article !', de: 'Deine Liste ist leer. Füge den ersten Artikel hinzu!' },
+  'shopping.inCart': { es: 'Ya en el carro', en: 'Already in the cart', pt: 'Já no carrinho', it: 'Già nel carrello', fr: 'Déjà dans le panier', de: 'Bereits im Wagen' },
+  'shopping.registerAndClear': { es: '✅ Registrar {amount} como gasto y vaciar el carro', en: '✅ Log {amount} as an expense and clear the cart', pt: '✅ Registar {amount} como despesa e esvaziar o carrinho', it: '✅ Registra {amount} come spesa e svuota il carrello', fr: '✅ Enregistrer {amount} comme dépense et vider le panier', de: '✅ {amount} als Ausgabe erfassen und Wagen leeren' },
+
+  // ---------- Invertir ----------
+  'invest.title': { es: '📈 ¿Y si lo invierto?', en: '📈 What if I invest it?', pt: '📈 E se eu investir?', it: '📈 E se lo investissi?', fr: '📈 Et si je l’investissais ?', de: '📈 Was, wenn ich es investiere?' },
+  'invest.subtitle': { es: 'Compara qué pasaría con tu dinero guardado sin más, frente a distintas formas de invertirlo a largo plazo.', en: 'Compare what would happen if you just kept your money vs. different ways of investing it long-term.', pt: 'Compara o que aconteceria ao teu dinheiro guardado com diferentes formas de o investir a longo prazo.', it: 'Confronta cosa succederebbe tenendo i tuoi soldi da parte rispetto a diversi modi di investirli a lungo termine.', fr: 'Compare ce qui arriverait à ton argent simplement mis de côté par rapport à différentes façons de l’investir sur le long terme.', de: 'Vergleiche, was mit deinem Geld passiert, wenn du es einfach behältst, statt es langfristig anzulegen.' },
+  'invest.initialAmount': { es: 'Cantidad inicial', en: 'Initial amount', pt: 'Valor inicial', it: 'Importo iniziale', fr: 'Montant initial', de: 'Startbetrag' },
+  'invest.monthlyContribution': { es: 'Aportación mensual', en: 'Monthly contribution', pt: 'Contribuição mensal', it: 'Contributo mensile', fr: 'Apport mensuel', de: 'Monatlicher Beitrag' },
+  'invest.horizon': { es: 'Horizonte: {years} {unit}', en: 'Horizon: {years} {unit}', pt: 'Horizonte: {years} {unit}', it: 'Orizzonte: {years} {unit}', fr: 'Horizon : {years} {unit}', de: 'Zeithorizont: {years} {unit}' },
+  'invest.year': { es: 'año', en: 'year', pt: 'ano', it: 'anno', fr: 'an', de: 'Jahr' },
+  'invest.years': { es: 'años', en: 'years', pt: 'anos', it: 'anni', fr: 'ans', de: 'Jahre' },
+  'invest.yieldNone': { es: 'sin crecimiento', en: 'no growth', pt: 'sem crescimento', it: 'nessuna crescita', fr: 'aucune croissance', de: 'kein Wachstum' },
+  'invest.yieldAmount': { es: '+{amount} de rendimiento', en: '+{amount} in returns', pt: '+{amount} de rendimento', it: '+{amount} di rendimento', fr: '+{amount} de rendement', de: '+{amount} Ertrag' },
+  'invest.disclaimer': {
+    es: '⚠️ Esto es una simulación educativa con rentabilidades medias históricas orientativas — no es una recomendación de inversión ni una promesa de resultados. Rentabilidades pasadas no garantizan rentabilidades futuras; invertir en oro, ETFs o acciones implica riesgo real de perder parte del dinero, sobre todo a corto plazo.',
+    en: '⚠️ This is an educational simulation using indicative historical average returns — not investment advice or a promise of results. Past performance doesn’t guarantee future results; investing in gold, ETFs or stocks carries real risk of losing money, especially short-term.',
+    pt: '⚠️ Esta é uma simulação educativa com rentabilidades médias históricas indicativas — não é uma recomendação de investimento nem uma promessa de resultados. Rentabilidades passadas não garantem rentabilidades futuras; investir em ouro, ETFs ou ações implica risco real de perder dinheiro, sobretudo a curto prazo.',
+    it: '⚠️ Questa è una simulazione educativa con rendimenti medi storici indicativi — non è una raccomandazione di investimento né una promessa di risultati. I rendimenti passati non garantiscono quelli futuri; investire in oro, ETF o azioni comporta un rischio reale di perdere denaro, soprattutto nel breve termine.',
+    fr: '⚠️ Il s’agit d’une simulation éducative basée sur des rendements moyens historiques indicatifs — pas d’un conseil en investissement ni d’une promesse de résultats. Les performances passées ne garantissent pas les performances futures ; investir dans l’or, les ETF ou les actions comporte un risque réel de perte, surtout à court terme.',
+    de: '⚠️ Dies ist eine Lernsimulation mit indikativen historischen Durchschnittsrenditen – keine Anlageberatung oder Ergebnisversprechen. Vergangene Wertentwicklung ist kein Indikator für die Zukunft; Gold, ETFs oder Aktien bergen ein echtes Verlustrisiko, besonders kurzfristig.',
+  },
+  'invest.converterTitle': { es: '💱 Conversor rápido de divisas', en: '💱 Quick currency converter', pt: '💱 Conversor rápido de moedas', it: '💱 Convertitore di valuta rapido', fr: '💱 Convertisseur de devises rapide', de: '💱 Schneller Währungsrechner' },
+  'invest.converterDesc': { es: 'Esta parte sí necesita internet (tasas del Banco Central Europeo). El resto de Kakeibo sigue funcionando sin conexión.', en: 'This part does need internet (European Central Bank rates). The rest of Kakeibo still works offline.', pt: 'Esta parte precisa de internet (taxas do Banco Central Europeu). O resto do Kakeibo continua a funcionar offline.', it: 'Questa parte richiede internet (tassi della Banca Centrale Europea). Il resto di Kakeibo funziona comunque offline.', fr: 'Cette partie nécessite bien internet (taux de la Banque centrale européenne). Le reste de Kakeibo fonctionne toujours hors ligne.', de: 'Dieser Teil braucht Internet (Kurse der Europäischen Zentralbank). Der Rest von Kakeibo funktioniert weiterhin offline.' },
+  'invest.consultingRate': { es: 'Consultando tasa…', en: 'Fetching rate…', pt: 'A consultar taxa…', it: 'Recupero tasso…', fr: 'Récupération du taux…', de: 'Kurs wird abgerufen…' },
+  'invest.rateError': { es: 'Sin conexión y sin una tasa guardada todavía para {from}→{to}.', en: 'No connection and no saved rate yet for {from}→{to}.', pt: 'Sem ligação e sem taxa guardada ainda para {from}→{to}.', it: 'Nessuna connessione e nessun tasso salvato per {from}→{to}.', fr: 'Pas de connexion et aucun taux enregistré pour {from}→{to}.', de: 'Keine Verbindung und noch kein gespeicherter Kurs für {from}→{to}.' },
+  'currency.searchPlaceholder': { es: '🔍 Buscar divisa (actual: {current})', en: '🔍 Search currency (current: {current})', pt: '🔍 Pesquisar moeda (atual: {current})', it: '🔍 Cerca valuta (attuale: {current})', fr: '🔍 Rechercher une devise (actuelle : {current})', de: '🔍 Währung suchen (aktuell: {current})' },
+  'emoji.searchPlaceholder': { es: '🔍 Buscar icono (ej: perro, gimnasio, viaje…)', en: '🔍 Search icon (e.g.: dog, gym, trip…)', pt: '🔍 Procurar ícone (ex: cão, ginásio, viagem…)', it: '🔍 Cerca icona (es: cane, palestra, viaggio…)', fr: '🔍 Rechercher une icône (ex : chien, sport, voyage…)', de: '🔍 Symbol suchen (z. B. Hund, Fitness, Reise…)' },
+  'currency.noResults': { es: 'Sin resultados para "{query}"', en: 'No results for "{query}"', pt: 'Sem resultados para "{query}"', it: 'Nessun risultato per "{query}"', fr: 'Aucun résultat pour « {query} »', de: 'Keine Ergebnisse für „{query}“' },
+  'calendar.spent': { es: 'gastados', en: 'spent', pt: 'gastos', it: 'spesi', fr: 'dépensés', de: 'ausgegeben' },
+  'calendar.prevMonth': { es: 'Mes anterior', en: 'Previous month', pt: 'Mês anterior', it: 'Mese precedente', fr: 'Mois précédent', de: 'Vorheriger Monat' },
+  'calendar.nextMonth': { es: 'Mes siguiente', en: 'Next month', pt: 'Mês seguinte', it: 'Mese successivo', fr: 'Mois suivant', de: 'Nächster Monat' },
+  'calendar.less': { es: 'Menos', en: 'Less', pt: 'Menos', it: 'Meno', fr: 'Moins', de: 'Weniger' },
+  'calendar.more': { es: 'Más', en: 'More', pt: 'Mais', it: 'Più', fr: 'Plus', de: 'Mehr' },
+  'calendar.incomeThatDay': { es: 'ingreso ese día', en: 'income that day', pt: 'receita nesse dia', it: 'entrata quel giorno', fr: 'revenu ce jour-là', de: 'Einnahme an diesem Tag' },
+  'calendar.noTransactions': { es: 'Sin movimientos este día.', en: 'No transactions this day.', pt: 'Sem movimentos neste dia.', it: 'Nessun movimento in questo giorno.', fr: 'Aucun mouvement ce jour-là.', de: 'Keine Buchungen an diesem Tag.' },
+  'calendar.dayTooltip': { es: '{amount} en {count} movimiento(s)', en: '{amount} across {count} transaction(s)', pt: '{amount} em {count} movimento(s)', it: '{amount} in {count} movimento/i', fr: '{amount} sur {count} mouvement(s)', de: '{amount} bei {count} Buchung(en)' },
+  'mascot.tipForName': { es: 'Consejo para {name}', en: 'Tip for {name}', pt: 'Dica para {name}', it: 'Consiglio per {name}', fr: 'Conseil pour {name}', de: 'Tipp für {name}' },
+  'mascot.tipOfDay': { es: 'Consejo del día', en: 'Tip of the day', pt: 'Dica do dia', it: 'Consiglio del giorno', fr: 'Conseil du jour', de: 'Tipp des Tages' },
+  'invest.cachedNote': { es: '· tasa guardada de hace {mins} min (sin conexión)', en: '· saved rate from {mins} min ago (offline)', pt: '· taxa guardada de há {mins} min (sem ligação)', it: '· tasso salvato {mins} min fa (offline)', fr: '· taux enregistré il y a {mins} min (hors ligne)', de: '· gespeicherter Kurs von vor {mins} Min. (offline)' },
+
+  // ---------- Novedades ----------
+  'whatsnew.title': { es: '🆕 Novedades', en: '🆕 What’s new', pt: '🆕 Novidades', it: '🆕 Novità', fr: '🆕 Nouveautés', de: '🆕 Neuigkeiten' },
+  'whatsnew.subtitle': { es: 'Así va evolucionando Kakeibo, versión a versión.', en: 'Here’s how Kakeibo is evolving, version by version.', pt: 'Assim evolui o Kakeibo, versão a versão.', it: 'Ecco come si evolve Kakeibo, versione dopo versione.', fr: 'Voici comment Kakeibo évolue, version après version.', de: 'So entwickelt sich Kakeibo, Version für Version.' },
+  'whatsnew.close': { es: 'Genial, ¡a probarlo!', en: 'Great, let’s try it!', pt: 'Ótimo, vamos experimentar!', it: 'Fantastico, proviamolo!', fr: 'Super, on essaie !', de: 'Super, ausprobieren!' },
+  'whatsnew.spanishNote': { es: '', en: '(release notes are written in Spanish for now)', pt: '(notas de lançamento por agora só em espanhol)', it: '(note di rilascio per ora solo in spagnolo)', fr: '(notes de version pour l’instant en espagnol uniquement)', de: '(Versionshinweise vorerst nur auf Spanisch)' },
+
+  // ---------- Categorías ----------
+  'category.vivienda': { es: 'Vivienda', en: 'Housing', pt: 'Habitação', it: 'Casa', fr: 'Logement', de: 'Wohnen' },
+  'category.comida': { es: 'Comida', en: 'Food', pt: 'Comida', it: 'Cibo', fr: 'Nourriture', de: 'Essen' },
+  'category.transporte': { es: 'Transporte', en: 'Transport', pt: 'Transporte', it: 'Trasporti', fr: 'Transport', de: 'Verkehr' },
+  'category.social': { es: 'Social', en: 'Social', pt: 'Social', it: 'Sociale', fr: 'Social', de: 'Soziales' },
+  'category.compras': { es: 'Compras', en: 'Shopping', pt: 'Compras', it: 'Shopping', fr: 'Achats', de: 'Einkäufe' },
+  'category.salud': { es: 'Salud', en: 'Health', pt: 'Saúde', it: 'Salute', fr: 'Santé', de: 'Gesundheit' },
+  'category.ropa': { es: 'Ropa', en: 'Clothing', pt: 'Roupa', it: 'Abbigliamento', fr: 'Vêtements', de: 'Kleidung' },
+  'category.ocio': { es: 'Ocio y diversión', en: 'Leisure & fun', pt: 'Lazer e diversão', it: 'Tempo libero e divertimento', fr: 'Loisirs', de: 'Freizeit & Spaß' },
+  'category.educacion': { es: 'Educación', en: 'Education', pt: 'Educação', it: 'Istruzione', fr: 'Éducation', de: 'Bildung' },
+  'category.suscripciones': { es: 'Suscripciones', en: 'Subscriptions', pt: 'Subscrições', it: 'Abbonamenti', fr: 'Abonnements', de: 'Abos' },
+  'category.ahorro': { es: 'Ahorro / Objetivo', en: 'Savings / Goal', pt: 'Poupança / Meta', it: 'Risparmio / Obiettivo', fr: 'Épargne / Objectif', de: 'Sparen / Ziel' },
+  'category.otros': { es: 'Otros', en: 'Other', pt: 'Outros', it: 'Altro', fr: 'Autres', de: 'Sonstiges' },
+  'category.salario': { es: 'Salario', en: 'Salary', pt: 'Salário', it: 'Stipendio', fr: 'Salaire', de: 'Gehalt' },
+  'category.freelance': { es: 'Freelance / Autónomo', en: 'Freelance', pt: 'Freelance', it: 'Freelance', fr: 'Freelance', de: 'Freiberuflich' },
+  'category.inversion-ingreso': { es: 'Rendimientos / Inversiones', en: 'Investment returns', pt: 'Rendimentos / Investimentos', it: 'Rendimenti / Investimenti', fr: 'Revenus d’investissement', de: 'Kapitalerträge' },
+  'category.regalo-recibido': { es: 'Regalo recibido', en: 'Gift received', pt: 'Presente recebido', it: 'Regalo ricevuto', fr: 'Cadeau reçu', de: 'Erhaltenes Geschenk' },
+  'category.reembolso': { es: 'Reembolso / Devolución', en: 'Refund', pt: 'Reembolso', it: 'Rimborso', fr: 'Remboursement', de: 'Erstattung' },
+  'category.ingresos': { es: 'Otros ingresos', en: 'Other income', pt: 'Outras receitas', it: 'Altre entrate', fr: 'Autres revenus', de: 'Sonstige Einnahmen' },
+
+  // ---------- Niveles ----------
+  'level.1': { es: 'Aprendiz de Ahorro', en: 'Savings Apprentice', pt: 'Aprendiz de Poupança', it: 'Apprendista del Risparmio', fr: 'Apprenti Épargnant', de: 'Spar-Lehrling' },
+  'level.2': { es: 'Discípulo Kakeibo', en: 'Kakeibo Disciple', pt: 'Discípulo Kakeibo', it: 'Discepolo Kakeibo', fr: 'Disciple Kakeibo', de: 'Kakeibo-Schüler' },
+  'level.3': { es: 'Guardián del Presupuesto', en: 'Budget Guardian', pt: 'Guardião do Orçamento', it: 'Guardiano del Budget', fr: 'Gardien du Budget', de: 'Budget-Wächter' },
+  'level.4': { es: 'Samurái del Ahorro', en: 'Savings Samurai', pt: 'Samurai da Poupança', it: 'Samurai del Risparmio', fr: 'Samouraï de l’Épargne', de: 'Spar-Samurai' },
+  'level.5': { es: 'Sabio de las Finanzas', en: 'Finance Sage', pt: 'Sábio das Finanças', it: 'Saggio delle Finanze', fr: 'Sage des Finances', de: 'Finanzweiser' },
+  'level.6': { es: 'Maestro Kakeibo', en: 'Kakeibo Master', pt: 'Mestre Kakeibo', it: 'Maestro Kakeibo', fr: 'Maître Kakeibo', de: 'Kakeibo-Meister' },
+  'level.7': { es: 'Leyenda del Ahorro', en: 'Savings Legend', pt: 'Lenda da Poupança', it: 'Leggenda del Risparmio', fr: 'Légende de l’Épargne', de: 'Spar-Legende' },
+
+  // ---------- Logros ----------
+  'ach.primer-registro.title': { es: 'Primer paso', en: 'First step', pt: 'Primeiro passo', it: 'Primo passo', fr: 'Premier pas', de: 'Erster Schritt' },
+  'ach.primer-registro.desc': { es: 'Registraste tu primer movimiento.', en: 'You logged your first transaction.', pt: 'Registaste o teu primeiro movimento.', it: 'Hai registrato il tuo primo movimento.', fr: 'Tu as enregistré ton premier mouvement.', de: 'Du hast deine erste Buchung erfasst.' },
+  'ach.diez-registros.title': { es: 'Cronista', en: 'Chronicler', pt: 'Cronista', it: 'Cronista', fr: 'Chroniqueur', de: 'Chronist' },
+  'ach.diez-registros.desc': { es: 'Registraste 10 movimientos.', en: 'You logged 10 transactions.', pt: 'Registaste 10 movimentos.', it: 'Hai registrato 10 movimenti.', fr: 'Tu as enregistré 10 mouvements.', de: 'Du hast 10 Buchungen erfasst.' },
+  'ach.cincuenta-registros.title': { es: 'Escriba del Kakeibo', en: 'Kakeibo Scribe', pt: 'Escriba do Kakeibo', it: 'Scriba del Kakeibo', fr: 'Scribe du Kakeibo', de: 'Kakeibo-Schreiber' },
+  'ach.cincuenta-registros.desc': { es: 'Registraste 50 movimientos.', en: 'You logged 50 transactions.', pt: 'Registaste 50 movimentos.', it: 'Hai registrato 50 movimenti.', fr: 'Tu as enregistré 50 mouvements.', de: 'Du hast 50 Buchungen erfasst.' },
+  'ach.racha-3.title': { es: 'Constancia inicial', en: 'Early consistency', pt: 'Constância inicial', it: 'Costanza iniziale', fr: 'Constance initiale', de: 'Erste Beständigkeit' },
+  'ach.racha-3.desc': { es: '3 días seguidos registrando.', en: '3 days in a row logging.', pt: '3 dias seguidos a registar.', it: '3 giorni consecutivi di registrazione.', fr: '3 jours de suite à enregistrer.', de: '3 Tage in Folge erfasst.' },
+  'ach.racha-7.title': { es: 'Semana disciplinada', en: 'Disciplined week', pt: 'Semana disciplinada', it: 'Settimana disciplinata', fr: 'Semaine disciplinée', de: 'Disziplinierte Woche' },
+  'ach.racha-7.desc': { es: '7 días seguidos registrando.', en: '7 days in a row logging.', pt: '7 dias seguidos a registar.', it: '7 giorni consecutivi di registrazione.', fr: '7 jours de suite à enregistrer.', de: '7 Tage in Folge erfasst.' },
+  'ach.racha-30.title': { es: 'Maestro de la rutina', en: 'Routine master', pt: 'Mestre da rotina', it: 'Maestro della routine', fr: 'Maître de la routine', de: 'Routine-Meister' },
+  'ach.racha-30.desc': { es: '30 días seguidos registrando.', en: '30 days in a row logging.', pt: '30 dias seguidos a registar.', it: '30 giorni consecutivi di registrazione.', fr: '30 jours de suite à enregistrer.', de: '30 Tage in Folge erfasst.' },
+  'ach.primer-objetivo.title': { es: 'Meta trazada', en: 'Goal set', pt: 'Meta traçada', it: 'Obiettivo tracciato', fr: 'Objectif tracé', de: 'Ziel gesetzt' },
+  'ach.primer-objetivo.desc': { es: 'Creaste tu primer objetivo de ahorro.', en: 'You created your first savings goal.', pt: 'Criaste a tua primeira meta de poupança.', it: 'Hai creato il tuo primo obiettivo di risparmio.', fr: 'Tu as créé ton premier objectif d’épargne.', de: 'Du hast dein erstes Sparziel erstellt.' },
+  'ach.objetivo-cumplido.title': { es: 'Sueño cumplido', en: 'Dream achieved', pt: 'Sonho realizado', it: 'Sogno realizzato', fr: 'Rêve accompli', de: 'Traum erfüllt' },
+  'ach.objetivo-cumplido.desc': { es: 'Completaste un objetivo de ahorro.', en: 'You completed a savings goal.', pt: 'Concluíste uma meta de poupança.', it: 'Hai completato un obiettivo di risparmio.', fr: 'Tu as atteint un objectif d’épargne.', de: 'Du hast ein Sparziel erreicht.' },
+  'ach.ahorro-100.title': { es: 'Primeras 100 monedas', en: 'First 100 coins', pt: 'Primeiras 100 moedas', it: 'Prime 100 monete', fr: 'Premières 100 pièces', de: 'Erste 100 Münzen' },
+  'ach.ahorro-100.desc': { es: 'Ahorraste 100 en tus objetivos.', en: 'You saved 100 toward your goals.', pt: 'Poupaste 100 nas tuas metas.', it: 'Hai risparmiato 100 per i tuoi obiettivi.', fr: 'Tu as épargné 100 pour tes objectifs.', de: 'Du hast 100 für deine Ziele gespart.' },
+  'ach.ahorro-1000.title': { es: 'Cofre del tesoro', en: 'Treasure chest', pt: 'Cofre do tesouro', it: 'Forziere del tesoro', fr: 'Coffre au trésor', de: 'Schatztruhe' },
+  'ach.ahorro-1000.desc': { es: 'Ahorraste 1000 en tus objetivos.', en: 'You saved 1000 toward your goals.', pt: 'Poupaste 1000 nas tuas metas.', it: 'Hai risparmiato 1000 per i tuoi obiettivi.', fr: 'Tu as épargné 1000 pour tes objectifs.', de: 'Du hast 1000 für deine Ziele gespart.' },
+  'ach.dos-meses.title': { es: 'Florece la constancia', en: 'Consistency blooms', pt: 'A constância floresce', it: 'La costanza fiorisce', fr: 'La constance fleurit', de: 'Beständigkeit blüht' },
+  'ach.dos-meses.desc': { es: 'Llevas 2 meses distintos registrados.', en: 'You’ve logged data across 2 different months.', pt: 'Já registaste em 2 meses diferentes.', it: 'Hai registrato dati in 2 mesi diversi.', fr: 'Tu as enregistré des données sur 2 mois différents.', de: 'Du hast in 2 verschiedenen Monaten erfasst.' },
+  'ach.seis-meses.title': { es: 'Camino del Torii', en: 'Path of the Torii', pt: 'Caminho do Torii', it: 'Sentiero del Torii', fr: 'Chemin du Torii', de: 'Pfad des Torii' },
+  'ach.seis-meses.desc': { es: 'Llevas 6 meses distintos registrados.', en: 'You’ve logged data across 6 different months.', pt: 'Já registaste em 6 meses diferentes.', it: 'Hai registrato dati in 6 mesi diversi.', fr: 'Tu as enregistré des données sur 6 mois différents.', de: 'Du hast in 6 verschiedenen Monaten erfasst.' },
+
+  // ---------- Escenarios de inversión ----------
+  'invscenario.efectivo.label': { es: 'Efectivo (hucha)', en: 'Cash (piggy bank)', pt: 'Dinheiro (mealheiro)', it: 'Contanti (salvadanaio)', fr: 'Liquide (tirelire)', de: 'Bargeld (Sparschwein)' },
+  'invscenario.efectivo.desc': { es: 'Guardado tal cual. No genera nada, y con el tiempo compra un poco menos por la inflación.', en: 'Kept as-is. It earns nothing, and buys a little less over time due to inflation.', pt: 'Guardado tal como está. Não gera nada e, com o tempo, compra um pouco menos devido à inflação.', it: 'Tenuto così com’è. Non genera nulla e, col tempo, acquista un po’ meno a causa dell’inflazione.', fr: 'Gardé tel quel. Ça ne rapporte rien, et ça achète un peu moins avec le temps à cause de l’inflation.', de: 'So aufbewahrt. Es bringt nichts ein und kauft mit der Zeit wegen der Inflation etwas weniger.' },
+  'invscenario.oro.label': { es: 'Oro', en: 'Gold', pt: 'Ouro', it: 'Oro', fr: 'Or', de: 'Gold' },
+  'invscenario.oro.desc': { es: 'Refugio clásico a muy largo plazo. Suele proteger más de lo que hace crecer el dinero.', en: 'A classic very-long-term safe haven. It tends to protect value more than grow it.', pt: 'Refúgio clássico a muito longo prazo. Costuma proteger mais do que fazer crescer o dinheiro.', it: 'Bene rifugio classico nel lunghissimo periodo. Tende a proteggere più che a far crescere il denaro.', fr: 'Valeur refuge classique à très long terme. Elle protège plus qu’elle ne fait fructifier l’argent.', de: 'Klassischer Fluchtwert auf sehr lange Sicht. Schützt eher den Wert, als dass er ihn stark vermehrt.' },
+  'invscenario.etf.label': { es: 'Fondo indexado (ETF)', en: 'Index fund (ETF)', pt: 'Fundo indexado (ETF)', it: 'Fondo indicizzato (ETF)', fr: 'Fonds indiciel (ETF)', de: 'Indexfonds (ETF)' },
+  'invscenario.etf.desc': { es: 'Media histórica real de un fondo diversificado (ej. MSCI World) a muy largo plazo.', en: 'Real historical average of a diversified fund (e.g. MSCI World) over the very long term.', pt: 'Média histórica real de um fundo diversificado (ex. MSCI World) a muito longo prazo.', it: 'Media storica reale di un fondo diversificato (es. MSCI World) nel lunghissimo periodo.', fr: 'Moyenne historique réelle d’un fonds diversifié (ex. MSCI World) sur le très long terme.', de: 'Realer historischer Durchschnitt eines breit gestreuten Fonds (z. B. MSCI World) auf sehr lange Sicht.' },
+  'invscenario.acciones.label': { es: 'Acciones individuales', en: 'Individual stocks', pt: 'Ações individuais', it: 'Azioni individuali', fr: 'Actions individuelles', de: 'Einzelaktien' },
+  'invscenario.acciones.desc': { es: 'Potencial algo mayor que un fondo diversificado, pero con mucha más volatilidad y riesgo real de pérdida.', en: 'Somewhat higher potential than a diversified fund, but much more volatile with real risk of loss.', pt: 'Potencial um pouco maior do que um fundo diversificado, mas com muito mais volatilidade e risco real de perda.', it: 'Potenziale leggermente superiore a un fondo diversificato, ma con molta più volatilità e rischio reale di perdita.', fr: 'Potentiel un peu plus élevé qu’un fonds diversifié, mais bien plus volatil avec un risque réel de perte.', de: 'Etwas höheres Potenzial als ein breit gestreuter Fonds, aber deutlich volatiler mit echtem Verlustrisiko.' },
+};
+
+export function translate(key: string, lang: LanguageCode, vars?: Record<string, string | number>): string {
+  const row = DICT[key];
+  let text = row ? (row[lang] || row.es) : key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      text = text.replaceAll(`{${k}}`, String(v));
+    }
+  }
+  return text;
+}
+
+/** Igual que translate(), pero si la clave no existe en el diccionario (p.
+ * ej. una categoría personalizada creada por el usuario) usa `fallback` en
+ * vez de devolver la clave en crudo. */
+export function translateWithFallback(key: string, lang: LanguageCode, fallback: string): string {
+  const row = DICT[key];
+  return row ? row[lang] || row.es : fallback;
+}

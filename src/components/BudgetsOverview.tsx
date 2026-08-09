@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { getCategory } from '../data/categories';
 import { useAllCategories } from '../hooks/useCategories';
+import { useCategoryLabel } from '../i18n/useCategoryLabel';
+import { useT } from '../i18n/useT';
 import { formatMoney, currentMonthKey } from '../utils/format';
 import type { View } from '../App';
 
@@ -18,6 +20,8 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
   const budgets = useStore((s) => s.budgets);
   const currency = useStore((s) => s.settings.currency);
   const allCategories = useAllCategories();
+  const categoryLabel = useCategoryLabel();
+  const { t } = useT();
   const month = currentMonthKey();
 
   const rows = useMemo(() => {
@@ -40,15 +44,13 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
   if (rows.length === 0) {
     return (
       <div className="card p-5">
-        <h2 className="font-display font-bold text-base mb-1">🎯 Presupuestos</h2>
-        <p className="text-sm text-soft mb-3">
-          Ponle un límite mensual a tus categorías y te avisamos con colores cuando te acerques.
-        </p>
+        <h2 className="font-display font-bold text-base mb-1">{t('budgets.titleEmpty')}</h2>
+        <p className="text-sm text-soft mb-3">{t('budgets.emptyText')}</p>
         <button
           onClick={() => setView('ajustes')}
           className="text-sm font-bold text-accent hover:underline"
         >
-          Configurar presupuestos →
+          {t('budgets.configure')}
         </button>
       </div>
     );
@@ -57,9 +59,9 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display font-bold text-base">🎯 Presupuestos del mes</h2>
+        <h2 className="font-display font-bold text-base">{t('budgets.title')}</h2>
         <button onClick={() => setView('ajustes')} className="text-xs font-bold text-accent">
-          Editar →
+          {t('budgets.edit')}
         </button>
       </div>
       <ul className="flex flex-col gap-3">
@@ -67,7 +69,7 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
           <li key={r.cat.id}>
             <div className="flex items-center justify-between text-sm mb-1">
               <span className="font-semibold flex items-center gap-1.5">
-                <span>{r.cat.emoji}</span> {r.cat.label}
+                <span>{r.cat.emoji}</span> {categoryLabel(r.cat)}
               </span>
               <span className="text-xs">
                 <span className="font-bold" style={{ color: STATUS[r.status] }}>
@@ -84,7 +86,7 @@ export default function BudgetsOverview({ setView }: { setView: (v: View) => voi
             </div>
             {r.status === 'critical' && (
               <p className="text-xs mt-1" style={{ color: STATUS.critical }}>
-                ⚠️ Te has pasado del presupuesto de {r.cat.label.toLowerCase()}
+                {t('budgets.overBudget', { category: categoryLabel(r.cat).toLowerCase() })}
               </p>
             )}
           </li>

@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useAllCategories } from '../hooks/useCategories';
 import { getCategory } from '../data/categories';
+import { useCategoryLabel } from '../i18n/useCategoryLabel';
+import { useT } from '../i18n/useT';
 import { formatMoney, getMonthMatrix, monthLabel, shiftMonthKey, currentMonthKey, WEEKDAY_LABELS } from '../utils/format';
 
 /** Calendario mensual con la intensidad de gasto de cada día (escala
@@ -11,6 +13,8 @@ export default function SpendingCalendar() {
   const transactions = useStore((s) => s.transactions);
   const currency = useStore((s) => s.settings.currency);
   const allCategories = useAllCategories();
+  const categoryLabel = useCategoryLabel();
+  const { t } = useT();
   const [monthKey, setMonthKey] = useState(currentMonthKey());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
@@ -43,16 +47,20 @@ export default function SpendingCalendar() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setMonthKey((m) => shiftMonthKey(m, -1))}
+          aria-label={t('calendar.prevMonth')}
           className="card-soft w-9 h-9 rounded-full font-bold text-lg"
         >
           ←
         </button>
         <div className="text-center">
           <p className="font-display font-bold capitalize">{monthLabel(monthKey)}</p>
-          <p className="text-xs text-soft">{formatMoney(monthTotal, currency)} gastados</p>
+          <p className="text-xs text-soft">
+            {formatMoney(monthTotal, currency)} {t('calendar.spent')}
+          </p>
         </div>
         <button
           onClick={() => setMonthKey((m) => shiftMonthKey(m, 1))}
+          aria-label={t('calendar.nextMonth')}
           className="card-soft w-9 h-9 rounded-full font-bold text-lg"
         >
           →
@@ -86,7 +94,11 @@ export default function SpendingCalendar() {
                     style={{
                       background: intensity > 0 ? `color-mix(in srgb, var(--accent) ${20 + intensity * 65}%, var(--surface-2))` : 'var(--surface-2)',
                     }}
-                    title={info ? `${formatMoney(info.spent, currency)} en ${info.count} movimiento(s)` : undefined}
+                    title={
+                      info
+                        ? t('calendar.dayTooltip', { amount: formatMoney(info.spent, currency), count: info.count })
+                        : undefined
+                    }
                   >
                     <span
                       className="text-xs font-bold"
@@ -104,7 +116,7 @@ export default function SpendingCalendar() {
           ))}
         </div>
         <div className="flex items-center gap-2 justify-end mt-3 text-[11px] text-soft">
-          <span>Menos</span>
+          <span>{t('calendar.less')}</span>
           <div className="flex gap-0.5">
             {[0.15, 0.4, 0.65, 0.9].map((v) => (
               <span
@@ -114,9 +126,9 @@ export default function SpendingCalendar() {
               />
             ))}
           </div>
-          <span>Más</span>
+          <span>{t('calendar.more')}</span>
           <span className="flex items-center gap-1 ml-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0ca30c]" /> ingreso ese día
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0ca30c]" /> {t('calendar.incomeThatDay')}
           </span>
         </div>
       </div>
@@ -125,20 +137,20 @@ export default function SpendingCalendar() {
         <div className="card-soft p-4">
           <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{selectedDay}</p>
           {dayTransactions.length === 0 ? (
-            <p className="text-sm text-soft">Sin movimientos este día.</p>
+            <p className="text-sm text-soft">{t('calendar.noTransactions')}</p>
           ) : (
             <ul className="flex flex-col divide-y divide-theme">
-              {dayTransactions.map((t) => {
-                const cat = getCategory(t.category, allCategories);
+              {dayTransactions.map((tx) => {
+                const cat = getCategory(tx.category, allCategories);
                 return (
-                  <li key={t.id} className="flex items-center gap-3 py-2">
+                  <li key={tx.id} className="flex items-center gap-3 py-2">
                     <span className="text-lg">{cat.emoji}</span>
-                    <span className="flex-1 text-sm font-medium truncate">{t.note || cat.label}</span>
+                    <span className="flex-1 text-sm font-medium truncate">{tx.note || categoryLabel(cat)}</span>
                     <span
-                      className={`font-bold text-sm tabular-nums ${t.type === 'ingreso' ? 'text-[#0ca30c]' : ''}`}
+                      className={`font-bold text-sm tabular-nums ${tx.type === 'ingreso' ? 'text-[#0ca30c]' : ''}`}
                     >
-                      {t.type === 'ingreso' ? '+' : '-'}
-                      {formatMoney(t.amount, currency)}
+                      {tx.type === 'ingreso' ? '+' : '-'}
+                      {formatMoney(tx.amount, currency)}
                     </span>
                   </li>
                 );

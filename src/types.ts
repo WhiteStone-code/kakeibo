@@ -37,12 +37,17 @@ export interface Category {
   custom?: boolean;
 }
 
+export type PaymentMethod = 'tarjeta' | 'efectivo' | 'movil' | 'transferencia';
+
 export interface Transaction {
   id: string;
   type: TransactionType;
   amount: number;
   category: string;
   note: string;
+  /** Dónde se hizo (tienda, restaurante...) — opcional, para saber dónde compras cada cosa. */
+  place?: string | null;
+  paymentMethod?: PaymentMethod;
   date: string; // ISO yyyy-MM-dd
   createdAt: number;
 }
@@ -106,9 +111,14 @@ export interface ShoppingItem {
   id: string;
   name: string;
   estPrice: number | null;
+  /** Nota personal: dónde comprarlo mejor/más barato, o lo que sea útil recordar. */
+  note: string | null;
   checked: boolean;
   createdAt: number;
 }
+
+export type PeriodicGoalType = 'ahorro' | 'gasto_max';
+export type PeriodicGoalFrequency = 'semanal' | 'mensual';
 
 export interface UserSettings {
   theme: ThemeId;
@@ -119,4 +129,12 @@ export interface UserSettings {
   onboarded: boolean;
   /** Última versión cuyo "Novedades" ya vio el usuario (ver data/changelog.ts). */
   lastSeenVersion: string;
+  language: LanguageCode;
+  /** Meta periódica opcional: "ahorra al menos X" o "no gastes más de X" cada semana/mes. */
+  periodicGoalEnabled: boolean;
+  periodicGoalAmount: number;
+  periodicGoalFrequency: PeriodicGoalFrequency;
+  periodicGoalType: PeriodicGoalType;
 }
+
+export type LanguageCode = 'es' | 'en' | 'pt' | 'it' | 'fr' | 'de';

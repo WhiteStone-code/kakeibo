@@ -93,3 +93,11 @@ export const shiftMonthKey = (monthKey: string, delta: number): string => {
   const d = new Date(y, m - 1 + delta, 1);
   return currentMonthKey(d);
 };
+
+/** Lunes de la semana actual, en ISO yyyy-MM-dd. */
+export const currentWeekStart = (date: Date = new Date()): string => {
+  const d = new Date(date);
+  const offset = (d.getDay() + 6) % 7; // lunes = 0
+  d.setDate(d.getDate() - offset);
+  return d.toISOString().slice(0, 10);
+};

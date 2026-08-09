@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { UNIQUE_CURRENCIES } from '../data/currencies';
+import { useT } from '../i18n/useT';
 
 export default function CurrencyPicker({
   value,
@@ -9,6 +10,7 @@ export default function CurrencyPicker({
   onChange: (code: string) => void;
 }) {
   const [query, setQuery] = useState('');
+  const { t } = useT();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -25,12 +27,12 @@ export default function CurrencyPicker({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={`🔍 Buscar divisa (actual: ${current?.name ?? value})`}
+        placeholder={t('currency.searchPlaceholder', { current: current?.name ?? value })}
         className="px-3 py-2 rounded-xl bg-surface border border-theme outline-none focus:border-accent text-sm"
       />
       <div className="max-h-48 overflow-y-auto flex flex-col divide-y divide-theme border border-theme rounded-xl">
         {filtered.length === 0 && (
-          <p className="text-xs text-soft text-center py-4">Sin resultados para "{query}"</p>
+          <p className="text-xs text-soft text-center py-4">{t('currency.noResults', { query })}</p>
         )}
         {filtered.map((c) => (
           <button

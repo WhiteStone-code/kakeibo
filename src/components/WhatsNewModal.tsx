@@ -1,12 +1,15 @@
 import Modal from './Modal';
 import { CHANGELOG, APP_VERSION } from '../data/changelog';
+import { useT } from '../i18n/useT';
 
 export default function WhatsNewModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t, lang } = useT();
   return (
-    <Modal open={open} onClose={onClose} title="🆕 Novedades">
+    <Modal open={open} onClose={onClose} title={t('whatsnew.title')}>
       <div className="flex flex-col gap-5 -mt-1">
         <p className="text-sm text-soft -mt-2">
-          Así va evolucionando Kakeibo, versión a versión.
+          {t('whatsnew.subtitle')}
+          {lang !== 'es' && <span className="block text-xs mt-0.5">{t('whatsnew.spanishNote')}</span>}
         </p>
         {CHANGELOG.map((entry) => (
           <div key={entry.version} className="flex gap-3">
@@ -35,7 +38,7 @@ export default function WhatsNewModal({ open, onClose }: { open: boolean; onClos
           </div>
         ))}
         <button onClick={onClose} className="btn-accent font-bold py-2.5 rounded-2xl text-sm">
-          Genial, ¡a probarlo!
+          {t('whatsnew.close')}
         </button>
       </div>
     </Modal>

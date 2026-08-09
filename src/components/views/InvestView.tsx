@@ -3,6 +3,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, Responsi
 import { useStore } from '../../store/useStore';
 import { INVESTMENT_SCENARIOS, projectGrowth } from '../../data/investmentScenarios';
 import { formatMoney } from '../../utils/format';
+import { useT } from '../../i18n/useT';
+import { translateWithFallback } from '../../i18n/translations';
 import CurrencyConverter from '../CurrencyConverter';
 
 export default function InvestView() {
@@ -10,6 +12,9 @@ export default function InvestView() {
   const goals = useStore((s) => s.goals);
   const currency = useStore((s) => s.settings.currency);
   const mode = useStore((s) => s.settings.mode);
+  const { t, lang } = useT();
+  const scenarioLabel = (id: string, fallback: string) => translateWithFallback(`invscenario.${id}.label`, lang, fallback);
+  const scenarioDesc = (id: string, fallback: string) => translateWithFallback(`invscenario.${id}.desc`, lang, fallback);
 
   const suggestedMonthly = useMemo(() => {
     const byMonth = new Map<string, number>();
@@ -45,8 +50,8 @@ export default function InvestView() {
     const chartData = [];
     for (let m = 0; m <= months; m += 1) {
       if (m % 3 !== 0 && m !== months) continue; // un punto por trimestre, más el final
-      const point: Record<string, number | string> = { mes: m, label: `Año ${(m / 12).toFixed(1)}` };
-      for (const { sc, series } of seriesByScenario) point[sc.label] = Math.round(series[m]);
+      const point: Record<string, number | string> = { mes: m, label: `${(m / 12).toFixed(1)}` };
+      for (const { sc, series } of seriesByScenario) point[sc.id] = Math.round(series[m]);
       chartData.push(point);
     }
     const finals = seriesByScenario.map(({ sc, series }) => ({
@@ -60,17 +65,14 @@ export default function InvestView() {
   return (
     <div className="flex flex-col gap-5 pb-24 md:pb-8">
       <div>
-        <h1 className="font-display font-extrabold text-2xl">📈 ¿Y si lo invierto?</h1>
-        <p className="text-soft text-sm">
-          Compara qué pasaría con tu dinero guardado sin más, frente a distintas formas de
-          invertirlo a largo plazo.
-        </p>
+        <h1 className="font-display font-extrabold text-2xl">{t('invest.title')}</h1>
+        <p className="text-soft text-sm">{t('invest.subtitle')}</p>
       </div>
 
       <div className="card p-5 flex flex-col gap-4">
         <div className="grid sm:grid-cols-3 gap-3">
           <div>
-            <label className="text-xs font-bold text-soft uppercase tracking-wide">Cantidad inicial</label>
+            <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('invest.initialAmount')}</label>
             <input
               inputMode="decimal"
               value={start}
@@ -79,7 +81,7 @@ export default function InvestView() {
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-soft uppercase tracking-wide">Aportación mensual</label>
+            <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('invest.monthlyContribution')}</label>
             <input
               inputMode="decimal"
               value={monthly}
@@ -89,7 +91,7 @@ export default function InvestView() {
           </div>
           <div>
             <label className="text-xs font-bold text-soft uppercase tracking-wide">
-              Horizonte: {years} {years === 1 ? 'año' : 'años'}
+              {t('invest.horizon', { years, unit: years === 1 ? t('invest.year') : t('invest.years') })}
             </label>
             <input
               type="range"
@@ -134,7 +136,8 @@ export default function InvestView() {
               <Line
                 key={sc.id}
                 type="monotone"
-                dataKey={sc.label}
+                dataKey={sc.id}
+                name={scenarioLabel(sc.id, sc.label)}
                 stroke={mode === 'dark' ? sc.colorDark : sc.color}
                 strokeWidth={2}
                 dot={false}
@@ -147,7 +150,7 @@ export default function InvestView() {
           {finals.map(({ sc, final, contributed }) => (
             <div key={sc.id} className="card-soft p-4">
               <p className="text-sm font-bold flex items-center gap-1.5">
-                <span>{sc.emoji}</span> {sc.label}
+                <span>{sc.emoji}</span> {scenarioLabel(sc.id, sc.label)}
               </p>
               <p
                 className="font-display font-extrabold text-lg mt-1"
@@ -157,20 +160,15 @@ export default function InvestView() {
               </p>
               <p className="text-xs text-soft mt-0.5">
                 {sc.annualReturn === 0
-                  ? 'sin crecimiento'
-                  : `+${formatMoney(Math.max(0, final - contributed), currency)} de rendimiento`}
+                  ? t('invest.yieldNone')
+                  : t('invest.yieldAmount', { amount: formatMoney(Math.max(0, final - contributed), currency) })}
               </p>
-              <p className="text-[11px] text-soft mt-1.5 leading-snug">{sc.description}</p>
+              <p className="text-[11px] text-soft mt-1.5 leading-snug">{scenarioDesc(sc.id, sc.description)}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-xs text-soft italic border-t border-theme pt-3">
-          ⚠️ Esto es una simulación educativa con rentabilidades medias históricas orientativas —
-          no es una recomendación de inversión ni una promesa de resultados. Rentabilidades
-          pasadas no garantizan rentabilidades futuras; invertir en oro, ETFs o acciones implica
-          riesgo real de perder parte del dinero, sobre todo a corto plazo.
-        </p>
+        <p className="text-xs text-soft italic border-t border-theme pt-3">{t('invest.disclaimer')}</p>
       </div>
 
       <CurrencyConverter defaultCurrency={currency} />

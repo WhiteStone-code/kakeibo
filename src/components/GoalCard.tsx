@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import type { Goal } from '../types';
 import { useStore } from '../store/useStore';
+import { useT } from '../i18n/useT';
 import { formatMoney, daysUntil } from '../utils/format';
 
 export default function GoalCard({ goal }: { goal: Goal }) {
   const contributeToGoal = useStore((s) => s.contributeToGoal);
   const removeGoal = useStore((s) => s.removeGoal);
   const currency = useStore((s) => s.settings.currency);
+  const { t } = useT();
   const [addAmount, setAddAmount] = useState('');
 
   const pct = Math.min(100, (goal.savedAmount / goal.targetAmount) * 100);
@@ -29,18 +31,19 @@ export default function GoalCard({ goal }: { goal: Goal }) {
           <div className="min-w-0">
             <p className="font-display font-bold truncate">{goal.name}</p>
             {goal.achieved ? (
-              <p className="text-xs font-bold text-accent">🎉 ¡Objetivo cumplido!</p>
+              <p className="text-xs font-bold text-accent">{t('goals.achievedBadge')}</p>
             ) : days !== null ? (
               <p className="text-xs text-soft">
-                {days >= 0 ? `Quedan ${days} días` : `Venció hace ${-days} días`}
+                {days >= 0 ? t('goals.daysLeft', { days }) : t('goals.overdue', { days: -days })}
               </p>
             ) : null}
           </div>
         </div>
         <button
           onClick={() => removeGoal(goal.id)}
+          aria-label={t('goals.deleteConfirm')}
           className="text-soft hover:text-[#e34948] text-sm px-1"
-          title="Eliminar objetivo"
+          title={t('goals.deleteConfirm')}
         >
           ✕
         </button>
@@ -62,14 +65,27 @@ export default function GoalCard({ goal }: { goal: Goal }) {
       {!goal.achieved && (
         <>
           <p className="text-xs text-soft">
-            Te faltan <span className="font-bold text-accent">{formatMoney(remaining, currency)}</span>
+            {t('goals.remainingPrefix')}{' '}
+            <span className="font-bold text-accent">{formatMoney(remaining, currency)}</span>
           </p>
+          <div className="flex gap-1.5 flex-wrap">
+            {[5, 10, 20, 50].map((quick) => (
+              <button
+                key={quick}
+                type="button"
+                onClick={() => contributeToGoal(goal.id, quick)}
+                className="card-soft px-2.5 py-1 rounded-full text-xs font-bold text-soft hover:text-accent"
+              >
+                +{quick} {currency}
+              </button>
+            ))}
+          </div>
           <form onSubmit={handleAdd} className="flex gap-2">
             <input
               inputMode="decimal"
               value={addAmount}
               onChange={(e) => setAddAmount(e.target.value)}
-              placeholder={`Añadir ${currency}`}
+              placeholder={t('goals.addAmountPlaceholder', { currency })}
               className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent text-sm"
             />
             <button type="submit" className="btn-accent font-bold px-4 rounded-xl text-sm">

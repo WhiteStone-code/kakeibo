@@ -1,26 +1,38 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
+import { useT } from '../../i18n/useT';
 import { formatMoney } from '../../utils/format';
+import type { ShoppingItem } from '../../types';
 
 export default function ShoppingListView() {
   const shoppingList = useStore((s) => s.shoppingList);
+  const shoppingBudget = useStore((s) => s.shoppingBudget);
+  const setShoppingBudget = useStore((s) => s.setShoppingBudget);
   const addShoppingItem = useStore((s) => s.addShoppingItem);
   const toggleShoppingItem = useStore((s) => s.toggleShoppingItem);
   const removeShoppingItem = useStore((s) => s.removeShoppingItem);
+  const updateShoppingItem = useStore((s) => s.updateShoppingItem);
   const clearCheckedShoppingItems = useStore((s) => s.clearCheckedShoppingItems);
   const addTransaction = useStore((s) => s.addTransaction);
   const currency = useStore((s) => s.settings.currency);
+  const { t } = useT();
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
 
-  const { pending, checked, totalEst, totalSpent } = useMemo(() => {
+  const { pending, checked, totalSpent, remaining } = useMemo(() => {
     const pending = shoppingList.filter((i) => !i.checked);
     const checked = shoppingList.filter((i) => i.checked);
-    const totalEst = shoppingList.reduce((sum, i) => sum + (i.estPrice ?? 0), 0);
     const totalSpent = checked.reduce((sum, i) => sum + (i.estPrice ?? 0), 0);
-    return { pending, checked, totalEst, totalSpent };
-  }, [shoppingList]);
+    return {
+      pending,
+      checked,
+      totalSpent,
+      remaining: shoppingBudget > 0 ? shoppingBudget - totalSpent : null,
+    };
+  }, [shoppingList, shoppingBudget]);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +41,16 @@ export default function ShoppingListView() {
     addShoppingItem({ name, estPrice: Number.isFinite(p) ? p : null });
     setName('');
     setPrice('');
+  };
+
+  const startNote = (item: ShoppingItem) => {
+    setEditingNoteId(item.id);
+    setNoteDraft(item.note ?? '');
+  };
+
+  const saveNote = (id: string) => {
+    updateShoppingItem(id, { note: noteDraft });
+    setEditingNoteId(null);
   };
 
   const sendToMovimientos = () => {
@@ -44,22 +66,98 @@ export default function ShoppingListView() {
     clearCheckedShoppingItems();
   };
 
+  const renderItem = (item: ShoppingItem, isChecked: boolean) => (
+    <li
+      key={item.id}
+      className={`py-2 border-b border-theme last:border-0 group ${isChecked ? 'opacity-60' : ''}`}
+    >
+      <div className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          checked={isChecked}
+          onChange={() => toggleShoppingItem(item.id)}
+          className="w-5 h-5 accent-[var(--accent)] shrink-0"
+        />
+        <span className={`flex-1 font-medium text-sm ${isChecked ? 'line-through' : ''}`}>{item.name}</span>
+        {item.estPrice !== null && (
+          <span className="text-sm text-soft tabular-nums">{formatMoney(item.estPrice, currency)}</span>
+        )}
+        <button
+          type="button"
+          onClick={() => startNote(item)}
+          className="opacity-0 group-hover:opacity-100 text-soft hover:text-accent px-1 text-sm"
+          title={t('shopping.notePlaceholder')}
+        >
+          📝
+        </button>
+        <button
+          type="button"
+          onClick={() => removeShoppingItem(item.id)}
+          className="opacity-0 group-hover:opacity-100 text-soft hover:text-[#e34948] px-1"
+        >
+          ✕
+        </button>
+      </div>
+      {editingNoteId === item.id ? (
+        <input
+          autoFocus
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          onBlur={() => saveNote(item.id)}
+          onKeyDown={(e) => e.key === 'Enter' && saveNote(item.id)}
+          placeholder={t('shopping.notePlaceholder')}
+          className="w-full mt-1.5 ml-8 px-2 py-1.5 rounded-lg bg-surface-2 border border-theme outline-none focus:border-accent text-xs"
+        />
+      ) : (
+        item.note && (
+          <button
+            onClick={() => startNote(item)}
+            className="text-xs text-soft italic mt-0.5 ml-8 text-left hover:text-accent"
+          >
+            💡 {item.note}
+          </button>
+        )
+      )}
+    </li>
+  );
+
   return (
     <div className="flex flex-col gap-5 pb-24 md:pb-8 max-w-2xl">
       <div>
-        <h1 className="font-display font-extrabold text-2xl">🛒 Lista de la compra</h1>
-        <p className="text-soft text-sm">Apunta lo que necesitas y cuánto crees que te va a costar</p>
+        <h1 className="font-display font-extrabold text-2xl">{t('shopping.title')}</h1>
+        <p className="text-soft text-sm">{t('shopping.subtitle')}</p>
+      </div>
+
+      <div className="card p-4 flex flex-col gap-2">
+        <label className="text-xs font-bold text-soft uppercase tracking-wide">
+          {t('shopping.budgetLabel')}
+        </label>
+        <p className="text-xs text-soft -mt-1">{t('shopping.budgetDesc')}</p>
+        <input
+          inputMode="decimal"
+          defaultValue={shoppingBudget || ''}
+          onBlur={(e) => setShoppingBudget(parseFloat(e.target.value.replace(',', '.')) || 0)}
+          placeholder="Ej: 40"
+          className="w-32 px-3 py-2 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-bold"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-4">
-          <p className="text-xs font-bold text-soft uppercase tracking-wide">Presupuesto de la lista</p>
-          <p className="font-display font-extrabold text-xl mt-1">{formatMoney(totalEst, currency)}</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs font-bold text-soft uppercase tracking-wide">Ya llevas gastado</p>
+          <p className="text-xs font-bold text-soft uppercase tracking-wide">{t('shopping.spent')}</p>
           <p className="font-display font-extrabold text-xl mt-1 text-accent">
             {formatMoney(totalSpent, currency)}
+          </p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-bold text-soft uppercase tracking-wide">
+            {remaining !== null ? t('shopping.remaining') : t('shopping.budget')}
+          </p>
+          <p
+            className="font-display font-extrabold text-xl mt-1"
+            style={{ color: remaining !== null && remaining < 0 ? '#e34948' : undefined }}
+          >
+            {remaining !== null ? formatMoney(remaining, currency) : t('shopping.undefined')}
           </p>
         </div>
       </div>
@@ -68,7 +166,7 @@ export default function ShoppingListView() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="¿Qué necesitas? (ej: Leche)"
+          placeholder={t('shopping.itemPlaceholder')}
           className="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-semibold"
         />
         <input
@@ -87,81 +185,29 @@ export default function ShoppingListView() {
       {shoppingList.length === 0 ? (
         <div className="card p-10 text-center text-soft">
           <p className="text-3xl mb-2">🧺</p>
-          Tu lista está vacía. ¡Añade el primer producto!
+          {t('shopping.empty')}
         </div>
       ) : (
         <div className="card p-4 flex flex-col gap-1">
-          {pending.map((item) => (
-            <label
-              key={item.id}
-              className="flex items-center gap-3 py-2 border-b border-theme last:border-0 cursor-pointer group"
-            >
-              <input
-                type="checkbox"
-                checked={false}
-                onChange={() => toggleShoppingItem(item.id)}
-                className="w-5 h-5 accent-[var(--accent)] shrink-0"
-              />
-              <span className="flex-1 font-medium text-sm">{item.name}</span>
-              {item.estPrice !== null && (
-                <span className="text-sm text-soft tabular-nums">{formatMoney(item.estPrice, currency)}</span>
-              )}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  removeShoppingItem(item.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 text-soft hover:text-[#e34948] px-1"
-              >
-                ✕
-              </button>
-            </label>
-          ))}
+          <ul>{pending.map((item) => renderItem(item, false))}</ul>
 
           {checked.length > 0 && (
             <>
               <p className="text-[11px] font-bold text-soft uppercase tracking-wide pt-3 pb-1">
-                Ya en el carro
+                {t('shopping.inCart')}
               </p>
-              {checked.map((item) => (
-                <label
-                  key={item.id}
-                  className="flex items-center gap-3 py-2 border-b border-theme last:border-0 cursor-pointer group opacity-60"
-                >
-                  <input
-                    type="checkbox"
-                    checked
-                    onChange={() => toggleShoppingItem(item.id)}
-                    className="w-5 h-5 accent-[var(--accent)] shrink-0"
-                  />
-                  <span className="flex-1 font-medium text-sm line-through">{item.name}</span>
-                  {item.estPrice !== null && (
-                    <span className="text-sm text-soft tabular-nums">{formatMoney(item.estPrice, currency)}</span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      removeShoppingItem(item.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 text-soft hover:text-[#e34948] px-1"
-                  >
-                    ✕
-                  </button>
-                </label>
-              ))}
+              <ul>{checked.map((item) => renderItem(item, true))}</ul>
             </>
           )}
         </div>
       )}
 
-      {checked.length > 0 && (
+      {checked.length > 0 && totalSpent > 0 && (
         <button
           onClick={sendToMovimientos}
           className="btn-accent font-bold py-3 rounded-2xl text-sm shadow-md"
         >
-          ✅ Registrar {formatMoney(totalSpent, currency)} como gasto y vaciar el carro
+          {t('shopping.registerAndClear', { amount: formatMoney(totalSpent, currency) })}
         </button>
       )}
     </div>

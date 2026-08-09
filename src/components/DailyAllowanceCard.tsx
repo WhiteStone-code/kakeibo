@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { currentMonthKey, formatMoney } from '../utils/format';
+import { useT } from '../i18n/useT';
 
 /**
  * La joya del panel: cuánto puede gastar hoy el usuario sin descuadrar el
@@ -9,12 +10,13 @@ import { currentMonthKey, formatMoney } from '../utils/format';
  * que de verdad ayuda a decidir en el momento de comprar, no solo a mirar
  * hacia atrás como un típico gráfico de gastos.
  */
-export default function DailyAllowanceCard() {
+export default function DailyAllowanceCard({ onAddTransaction }: { onAddTransaction?: () => void }) {
   const transactions = useStore((s) => s.transactions);
   const goals = useStore((s) => s.goals);
   const currency = useStore((s) => s.settings.currency);
+  const { t } = useT();
 
-  const { dailyAllowance, monthBalance, daysLeft, goalHint } = useMemo(() => {
+  const { dailyAllowance, monthBalance, daysLeft, goalHint, hasIncome } = useMemo(() => {
     const month = currentMonthKey();
     let ingresos = 0;
     let gastos = 0;
@@ -50,10 +52,31 @@ export default function DailyAllowanceCard() {
         }
       : null;
 
-    return { dailyAllowance, monthBalance, daysLeft, goalHint };
+    return { dailyAllowance, monthBalance, daysLeft, goalHint, hasIncome: ingresos > 0 };
   }, [transactions, goals]);
 
   const overBudget = monthBalance < 0;
+
+  // Sin ningún ingreso registrado este mes, "Hoy puedes gastar ≈ 0,00 €" lee
+  // como una mala noticia nada más entrar — mejor pedir el primer dato que
+  // falta en vez de mostrar un cero desmotivador.
+  if (!hasIncome) {
+    return (
+      <div className="card p-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs font-bold text-soft uppercase tracking-wide">
+            {t('allowance.noIncomeTitle')}
+          </p>
+          <p className="text-sm text-soft mt-1 max-w-md">{t('allowance.noIncomeMsg')}</p>
+        </div>
+        {onAddTransaction && (
+          <button onClick={onAddTransaction} className="btn-accent font-bold px-4 py-2.5 rounded-2xl text-sm shrink-0">
+            {t('allowance.addIncomeCta')}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -66,26 +89,21 @@ export default function DailyAllowanceCard() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold text-soft uppercase tracking-wide">
-            {overBudget ? 'Este mes' : 'Hoy puedes gastar'}
+            {overBudget ? t('allowance.titleOver') : t('allowance.titleOk')}
           </p>
           {overBudget ? (
             <>
               <p className="font-display font-extrabold text-2xl text-[#e34948] mt-1">
-                {formatMoney(Math.abs(monthBalance), currency)} por encima de tus ingresos
+                {t('allowance.overAmount', { amount: formatMoney(Math.abs(monthBalance), currency) })}
               </p>
-              <p className="text-sm text-soft mt-1">
-                🍵 Sin culpa — es solo información. Hoy puede ser un buen día para frenar un
-                poco y volver a tu ritmo.
-              </p>
+              <p className="text-sm text-soft mt-1">{t('allowance.overMsg')}</p>
             </>
           ) : (
             <>
               <p className="font-display font-extrabold text-4xl text-accent mt-1">
                 ≈ {formatMoney(dailyAllowance, currency)}
               </p>
-              <p className="text-sm text-soft mt-1">
-                cada día, durante los {daysLeft} días que quedan de mes, para llegar sin pasarte
-              </p>
+              <p className="text-sm text-soft mt-1">{t('allowance.perDay', { days: daysLeft })}</p>
             </>
           )}
         </div>
@@ -96,8 +114,10 @@ export default function DailyAllowanceCard() {
         <div className="border-t border-theme pt-3 flex items-center gap-2.5 text-sm">
           <span className="text-xl">{goalHint.emoji}</span>
           <p>
-            Para llegar a <span className="font-bold">{goalHint.name}</span> a tiempo, intenta
-            ahorrar <span className="font-bold text-accent">{formatMoney(Math.max(0, goalHint.perDay), currency)}/día</span>
+            {t('allowance.goalHint', {
+              goal: goalHint.name,
+              amount: formatMoney(Math.max(0, goalHint.perDay), currency),
+            })}
           </p>
         </div>
       )}

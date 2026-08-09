@@ -19,6 +19,8 @@ import ShoppingListView from './components/views/ShoppingListView';
 import WhatsNewModal from './components/WhatsNewModal';
 import { ACHIEVEMENTS } from './data/achievements';
 import { APP_VERSION } from './data/changelog';
+import { useT } from './i18n/useT';
+import { translateWithFallback } from './i18n/translations';
 import type { Transaction } from './types';
 
 export type View =
@@ -33,6 +35,7 @@ export type View =
 
 export default function App() {
   useApplyTheme();
+  const { t, lang } = useT();
 
   const onboarded = useStore((s) => s.settings.onboarded);
   const lastSeenVersion = useStore((s) => s.settings.lastSeenVersion);
@@ -103,7 +106,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <TopBar onAdd={openNewTransaction} />
         <main className="flex-1 px-4 md:px-8 py-6 max-w-6xl w-full mx-auto">
-          {view === 'dashboard' && <Dashboard setView={setView} />}
+          {view === 'dashboard' && <Dashboard setView={setView} onAddTransaction={openNewTransaction} />}
           {view === 'transacciones' && <TransactionsView onEdit={openEditTransaction} />}
           {view === 'objetivos' && <GoalsView />}
           {view === 'logros' && <AchievementsView />}
@@ -132,7 +135,7 @@ export default function App() {
             >
               <span className="text-3xl">{celebratedGoal.emoji}</span>
               <div>
-                <p className="font-display font-bold">¡Objetivo cumplido! 🎉</p>
+                <p className="font-display font-bold">{t('goals.achievedBadge')}</p>
                 <p className="text-sm text-soft">{celebratedGoal.name}</p>
               </div>
             </motion.div>
@@ -150,8 +153,8 @@ export default function App() {
             >
               <span className="text-3xl">{a.emoji}</span>
               <div>
-                <p className="font-display font-bold text-sm">¡Logro desbloqueado!</p>
-                <p className="text-sm text-soft">{a.title}</p>
+                <p className="font-display font-bold text-sm">{t('achievements.unlocked')}</p>
+                <p className="text-sm text-soft">{translateWithFallback(`ach.${a.id}.title`, lang, a.title)}</p>
               </div>
             </motion.div>
           ))}

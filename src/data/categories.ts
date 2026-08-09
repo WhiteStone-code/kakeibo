@@ -19,7 +19,15 @@ export const CATEGORIES: Category[] = [
   { id: 'suscripciones', label: 'Suscripciones', emoji: '📱', color: '#5b6b8c', colorDark: '#8fa1c4', group: 'extra' },
   { id: 'ahorro', label: 'Ahorro / Objetivo', emoji: '💴', color: '#a67c1e', colorDark: '#d4a53d', group: 'extra' },
   { id: 'otros', label: 'Otros', emoji: '🎁', color: '#898781', colorDark: '#a3a199', group: 'extra' },
-  { id: 'ingresos', label: 'Ingresos', emoji: '💰', color: '#0ca30c', colorDark: '#3fc93f', group: 'ingreso' },
+
+  // Categorías de ingreso — antes solo existía "Ingresos" como cajón único;
+  // ahora se pueden distinguir igual que los gastos.
+  { id: 'salario', label: 'Salario', emoji: '💼', color: '#0ca30c', colorDark: '#3fc93f', group: 'ingreso' },
+  { id: 'freelance', label: 'Freelance / Autónomo', emoji: '🧑‍💻', color: '#7c3aed', colorDark: '#a78bfa', group: 'ingreso' },
+  { id: 'inversion-ingreso', label: 'Rendimientos / Inversiones', emoji: '📈', color: '#c98500', colorDark: '#e0a530', group: 'ingreso' },
+  { id: 'regalo-recibido', label: 'Regalo recibido', emoji: '🎀', color: '#d55181', colorDark: '#e8927c', group: 'ingreso' },
+  { id: 'reembolso', label: 'Reembolso / Devolución', emoji: '↩️', color: '#2a78d6', colorDark: '#3987e5', group: 'ingreso' },
+  { id: 'ingresos', label: 'Otros ingresos', emoji: '💰', color: '#199e70', colorDark: '#3fc93f', group: 'ingreso' },
 ];
 
 const FALLBACK_CATEGORY = CATEGORIES.find((c) => c.id === 'otros')!;
@@ -31,7 +39,8 @@ const FALLBACK_CATEGORY = CATEGORIES.find((c) => c.id === 'otros')!;
 export const getCategory = (id: string, custom: Category[] = []): Category =>
   CATEGORIES.find((c) => c.id === id) ?? custom.find((c) => c.id === id) ?? FALLBACK_CATEGORY;
 
-export const EXPENSE_CATEGORIES = CATEGORIES.filter((c) => c.id !== 'ingresos');
+export const EXPENSE_CATEGORIES = CATEGORIES.filter((c) => c.group !== 'ingreso');
+export const INCOME_CATEGORIES = CATEGORIES.filter((c) => c.group === 'ingreso');
 
 // Colores de reserva para categorías personalizadas — distintos de los 13 de
 // fábrica para que no se confundan al verse juntos en el mismo gráfico.

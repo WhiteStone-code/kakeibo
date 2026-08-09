@@ -1,23 +1,26 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { View } from '../App';
-
-const PRIMARY_ITEMS: { id: View; label: string; emoji: string }[] = [
-  { id: 'dashboard', label: 'Panel', emoji: '🏠' },
-  { id: 'transacciones', label: 'Movs', emoji: '📒' },
-  { id: 'objetivos', label: 'Metas', emoji: '🎯' },
-  { id: 'logros', label: 'Logros', emoji: '🎖️' },
-];
-
-const MORE_ITEMS: { id: View; label: string; emoji: string }[] = [
-  { id: 'lista', label: 'Lista de la compra', emoji: '🛒' },
-  { id: 'invertir', label: '¿Y si invierto?', emoji: '📈' },
-  { id: 'reflexion', label: 'Reflexión', emoji: '🧘' },
-  { id: 'ajustes', label: 'Ajustes', emoji: '⚙️' },
-];
+import { useT } from '../i18n/useT';
 
 export default function MobileNav({ view, setView }: { view: View; setView: (v: View) => void }) {
+  const { t } = useT();
   const [moreOpen, setMoreOpen] = useState(false);
+
+  const PRIMARY_ITEMS: { id: View; label: string; emoji: string }[] = [
+    { id: 'dashboard', label: t('nav.dashboard'), emoji: '🏠' },
+    { id: 'transacciones', label: t('nav.transactions.short'), emoji: '📒' },
+    { id: 'objetivos', label: t('nav.goals.short'), emoji: '🎯' },
+    { id: 'logros', label: t('nav.achievements'), emoji: '🎖️' },
+  ];
+
+  const MORE_ITEMS: { id: View; label: string; emoji: string }[] = [
+    { id: 'lista', label: t('nav.shopping'), emoji: '🛒' },
+    { id: 'invertir', label: t('nav.invest'), emoji: '📈' },
+    { id: 'reflexion', label: t('nav.reflection'), emoji: '🧘' },
+    { id: 'ajustes', label: t('nav.settings'), emoji: '⚙️' },
+  ];
+
   const moreActive = MORE_ITEMS.some((i) => i.id === view);
 
   return (
@@ -45,7 +48,7 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
                     setView(item.id);
                     setMoreOpen(false);
                   }}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold ${
+                  className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold min-h-[44px] ${
                     item.id === view ? 'btn-accent' : 'hover:bg-app-soft'
                   }`}
                 >
@@ -58,14 +61,14 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
         )}
       </AnimatePresence>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-theme flex justify-around px-1 py-2 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-theme flex justify-around px-1 py-1 z-40">
         {PRIMARY_ITEMS.map((item) => {
           const active = item.id === view;
           return (
             <button
               key={item.id}
               onClick={() => setView(item.id)}
-              className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[11px] font-semibold ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl text-[11px] font-semibold min-h-[44px] min-w-[44px] ${
                 active ? 'text-accent' : 'text-soft'
               }`}
             >
@@ -76,12 +79,13 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
         })}
         <button
           onClick={() => setMoreOpen((v) => !v)}
-          className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-[11px] font-semibold ${
+          aria-label={t('nav.more')}
+          className={`flex flex-col items-center justify-center gap-0.5 px-2 py-2 rounded-xl text-[11px] font-semibold min-h-[44px] min-w-[44px] ${
             moreActive || moreOpen ? 'text-accent' : 'text-soft'
           }`}
         >
           <span className="text-xl">⋯</span>
-          Más
+          {t('nav.more')}
         </button>
       </nav>
     </>
