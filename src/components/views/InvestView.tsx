@@ -50,7 +50,7 @@ export default function InvestView() {
     const chartData = [];
     for (let m = 0; m <= months; m += 1) {
       if (m % 3 !== 0 && m !== months) continue; // un punto por trimestre, más el final
-      const point: Record<string, number | string> = { mes: m, label: `${(m / 12).toFixed(1)}` };
+      const point: Record<string, number | string> = { mes: m };
       for (const { sc, series } of seriesByScenario) point[sc.id] = Math.round(series[m]);
       chartData.push(point);
     }
@@ -61,6 +61,13 @@ export default function InvestView() {
     }));
     return { chartData, finals };
   }, [startNum, monthlyNum, months]);
+
+  // Solo una etiqueta por año en el eje X (evita el amasijo de decimales
+  // de trimestre en trimestre: 0.0, 0.3, 0.6…).
+  const yearTicks = useMemo(
+    () => Array.from({ length: years + 1 }, (_, i) => i * 12),
+    [years]
+  );
 
   return (
     <div className="flex flex-col gap-5 pb-24 md:pb-8">
@@ -108,11 +115,14 @@ export default function InvestView() {
           <LineChart data={chartData} margin={{ left: -10 }}>
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 4" />
             <XAxis
-              dataKey="label"
+              dataKey="mes"
+              type="number"
+              domain={[0, months]}
+              ticks={yearTicks}
+              tickFormatter={(m) => `${Math.round(Number(m) / 12)}`}
               axisLine={{ stroke: 'var(--border)' }}
               tickLine={false}
               tick={{ fill: 'var(--text-soft)', fontSize: 11, fontFamily: 'Nunito' }}
-              interval="preserveStartEnd"
             />
             <YAxis
               axisLine={false}
@@ -123,6 +133,7 @@ export default function InvestView() {
             />
             <Tooltip
               formatter={(value) => formatMoney(Number(value) || 0, currency)}
+              labelFormatter={(m) => t('invest.chartYearLabel', { years: Math.round(Number(m) / 12) })}
               contentStyle={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',

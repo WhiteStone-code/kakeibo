@@ -4,7 +4,7 @@ import { useAllCategories } from '../../hooks/useCategories';
 import { getCategory } from '../../data/categories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
 import { useT } from '../../i18n/useT';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, formatDate } from '../../utils/format';
 import SpendingCalendar from '../SpendingCalendar';
 import type { Transaction } from '../../types';
 
@@ -82,7 +82,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
       ) : (
         grouped.map(([date, items]) => (
           <div key={date} className="card p-4">
-            <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{date}</p>
+            <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{formatDate(date)}</p>
             <ul className="flex flex-col divide-y divide-theme">
               {items.map((tx) => {
                 const cat = getCategory(tx.category, allCategories);

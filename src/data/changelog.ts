@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.8.0';
+export const APP_VERSION = '0.8.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,18 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.8.1',
+    date: '10 ago 2026',
+    title: 'Ronda de repaso: idiomas, gráficas y sitio para los avisos',
+    items: [
+      'Arreglado: la leyenda del gráfico de tendencia, los nombres de las 5 temáticas visuales y varios textos de la lista de la compra se quedaban en español aunque cambiaras de idioma',
+      'Arreglado: fechas y meses ahora salen en el formato de cada idioma (antes siempre en español, aunque estuvieras en inglés o alemán)',
+      'Arreglado: el eje del gráfico "¿Y si invierto?" mostraba decimales raros (0.3, 0.6…) en vez de años enteros',
+      'Arreglado: "家計簿" (el nombre japonés de Kakeibo) podía verse como un cuadradito en algunos móviles',
+      'Arreglado: el aviso de logro conseguido podía tapar el título o el botón de compartir en pantallas pequeñas',
+    ],
+  },
   {
     version: '0.8.0',
     date: '9 ago 2026',

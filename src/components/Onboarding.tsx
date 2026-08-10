@@ -4,11 +4,14 @@ import { useStore } from '../store/useStore';
 import { THEMES } from '../data/themes';
 import { APP_VERSION } from '../data/changelog';
 import { useT } from '../i18n/useT';
+import { translateWithFallback } from '../i18n/translations';
 import type { ThemeId } from '../types';
 
 export default function Onboarding() {
   const updateSettings = useStore((s) => s.updateSettings);
-  const { t } = useT();
+  const { t, lang } = useT();
+  const themeName = (id: string, fallback: string) => translateWithFallback(`theme.${id}.name`, lang, fallback);
+  const themeTagline = (id: string, fallback: string) => translateWithFallback(`theme.${id}.tagline`, lang, fallback);
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [theme, setTheme] = useState<ThemeId>('zen');
@@ -70,8 +73,8 @@ export default function Onboarding() {
                 >
                   <span className="text-2xl">{th.emoji}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-display font-bold text-sm">{th.name}</p>
-                    <p className="text-xs text-soft leading-tight">{th.tagline}</p>
+                    <p className="font-display font-bold text-sm">{themeName(th.id, th.name)}</p>
+                    <p className="text-xs text-soft leading-tight">{themeTagline(th.id, th.tagline)}</p>
                   </div>
                   <div className="flex -space-x-1.5 shrink-0">
                     {th.preview.map((c, i) => (

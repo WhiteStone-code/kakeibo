@@ -4,7 +4,7 @@ import { useAllCategories } from '../hooks/useCategories';
 import { getCategory } from '../data/categories';
 import { useCategoryLabel } from '../i18n/useCategoryLabel';
 import { useT } from '../i18n/useT';
-import { formatMoney, getMonthMatrix, monthLabel, shiftMonthKey, currentMonthKey, WEEKDAY_LABELS } from '../utils/format';
+import { formatMoney, formatDate, getMonthMatrix, monthLabel, shiftMonthKey, currentMonthKey, getWeekdayLabels } from '../utils/format';
 
 /** Calendario mensual con la intensidad de gasto de cada día (escala
  * secuencial de un solo tono, ver skill de dataviz) — toca un día para ver
@@ -17,6 +17,7 @@ export default function SpendingCalendar() {
   const { t } = useT();
   const [monthKey, setMonthKey] = useState(currentMonthKey());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const weekdayLabels = getWeekdayLabels();
 
   const { weeks, byDay, maxSpent, monthTotal } = useMemo(() => {
     const byDay = new Map<string, { spent: number; income: number; count: number }>();
@@ -69,8 +70,8 @@ export default function SpendingCalendar() {
 
       <div>
         <div className="grid grid-cols-7 gap-1.5 mb-1.5">
-          {WEEKDAY_LABELS.map((w) => (
-            <div key={w} className="text-center text-[11px] font-bold text-soft">
+          {weekdayLabels.map((w, i) => (
+            <div key={i} className="text-center text-[11px] font-bold text-soft">
               {w}
             </div>
           ))}
@@ -135,7 +136,7 @@ export default function SpendingCalendar() {
 
       {selectedDay && (
         <div className="card-soft p-4">
-          <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{selectedDay}</p>
+          <p className="text-xs font-bold text-soft uppercase tracking-wide mb-2">{formatDate(selectedDay)}</p>
           {dayTransactions.length === 0 ? (
             <p className="text-sm text-soft">{t('calendar.noTransactions')}</p>
           ) : (

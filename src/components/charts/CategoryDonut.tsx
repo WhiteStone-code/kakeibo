@@ -3,6 +3,8 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useStore } from '../../store/useStore';
 import { getCategory, categoryColor } from '../../data/categories';
 import { useAllCategories } from '../../hooks/useCategories';
+import { useCategoryLabel } from '../../i18n/useCategoryLabel';
+import { useT } from '../../i18n/useT';
 import { formatMoney } from '../../utils/format';
 import { currentMonthKey } from '../../utils/format';
 
@@ -20,6 +22,8 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
   const mode = useStore((s) => s.settings.mode);
   const currency = useStore((s) => s.settings.currency);
   const allCategories = useAllCategories();
+  const categoryLabel = useCategoryLabel();
+  const { t } = useT();
   const month = monthKey ?? currentMonthKey();
 
   const { slices, total } = useMemo(() => {
@@ -35,7 +39,7 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
         const cat = getCategory(id, allCategories);
         return {
           id,
-          label: cat.label,
+          label: categoryLabel(cat),
           emoji: cat.emoji,
           value,
           color: categoryColor(cat, mode),
@@ -44,13 +48,14 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
       })
       .sort((a, b) => b.value - a.value);
     return { slices, total };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions, month, mode, allCategories]);
 
   if (slices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10 text-soft text-sm">
         <span className="text-3xl">🍃</span>
-        Aún no hay gastos este mes. ¡Añade tu primer movimiento!
+        {t('dashboard.noExpensesYet')}
       </div>
     );
   }
@@ -91,7 +96,7 @@ export default function CategoryDonut({ monthKey }: { monthKey?: string }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[11px] text-soft font-semibold uppercase tracking-wide">Total</span>
+          <span className="text-[11px] text-soft font-semibold uppercase tracking-wide">{t('common.total')}</span>
           <span className="font-display font-bold text-lg">{formatMoney(total, currency)}</span>
         </div>
       </div>

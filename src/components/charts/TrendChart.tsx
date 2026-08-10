@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { useStore } from '../../store/useStore';
+import { useT } from '../../i18n/useT';
 import { lastNMonths, monthLabel, formatMoney } from '../../utils/format';
 
 const INGRESO_COLOR = { light: '#0ca30c', dark: '#3fc93f' };
@@ -19,6 +20,7 @@ export default function TrendChart() {
   const transactions = useStore((s) => s.transactions);
   const mode = useStore((s) => s.settings.mode);
   const currency = useStore((s) => s.settings.currency);
+  const { t } = useT();
 
   const data = useMemo(() => {
     const months = lastNMonths(6);
@@ -77,8 +79,8 @@ export default function TrendChart() {
           iconSize={9}
           wrapperStyle={{ fontSize: 12, fontFamily: 'Nunito', color: textColor }}
         />
-        <Bar dataKey="Ingresos" fill={ingresoColor} radius={[6, 6, 0, 0]} maxBarSize={22} />
-        <Bar dataKey="Gastos" fill={gastoColor} radius={[6, 6, 0, 0]} maxBarSize={22} />
+        <Bar dataKey="Ingresos" name={t('dashboard.income')} fill={ingresoColor} radius={[6, 6, 0, 0]} maxBarSize={22} />
+        <Bar dataKey="Gastos" name={t('dashboard.expenses')} fill={gastoColor} radius={[6, 6, 0, 0]} maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -29,7 +29,7 @@ export default function LanguageSwitcher() {
         {current.flag}
       </button>
       {open && (
-        <div className="absolute right-0 top-12 bg-surface border border-theme rounded-2xl shadow-xl p-1.5 z-50 min-w-[160px]">
+        <div className="absolute right-0 top-12 bg-surface border border-theme rounded-2xl shadow-xl p-1.5 z-[61] min-w-[160px]">
           {LANGUAGES.map((l) => (
             <button
               key={l.code}

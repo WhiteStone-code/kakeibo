@@ -1,31 +1,35 @@
+import { useStore } from '../store/useStore';
+import { LOCALE_MAP } from '../i18n/translations';
+
+/** Lee el idioma activo directamente del store (sin ser un hook) para que
+ * fechas/números se formateen en el idioma correcto sin tener que pasar el
+ * locale a mano por cada llamada — antes todo esto estaba fijado a 'es-ES'
+ * pase lo que pase, hallazgo real del QA en alemán/inglés/etc. */
+const getLocale = (): string => LOCALE_MAP[useStore.getState().settings.language] ?? 'es-ES';
+
 /** Formatea con Intl usando el código ISO de la divisa — así cada una respeta
  * sus propias reglas (JPY sin decimales, posición del símbolo, etc.) sin
  * tener que mantenerlas a mano. Si el código no es válido (dato antiguo),
  * cae a un formato simple en vez de romper. */
 export const formatMoney = (amount: number, currency = 'EUR'): string => {
+  const locale = getLocale();
   try {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       currencyDisplay: 'symbol',
     }).format(amount);
   } catch {
-    return `${amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+    return `${amount.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
   }
 };
 
 export const currentMonthKey = (date: Date = new Date()): string => date.toISOString().slice(0, 10).slice(0, 7);
 
-const MONTH_NAMES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-];
-
-const WEEKDAY_NAMES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-
 export const monthLabel = (monthKey: string): string => {
   const [y, m] = monthKey.split('-').map(Number);
-  return `${MONTH_NAMES[m - 1]} ${y}`;
+  const d = new Date(y, m - 1, 1);
+  return new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric' }).format(d);
 };
 
 export const lastNMonths = (n: number): string[] => {
@@ -37,6 +41,13 @@ export const lastNMonths = (n: number): string[] => {
     d.setMonth(d.getMonth() - 1);
   }
   return out;
+};
+
+/** Fecha corta legible en el idioma activo (ej. "9 ago 2026"), en vez del
+ * ISO en crudo. */
+export const formatDate = (isoDate: string): string => {
+  const d = new Date(`${isoDate}T00:00:00`);
+  return new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 };
 
 export const daysUntil = (isoDate: string | null): number | null => {
@@ -86,7 +97,18 @@ export const getMonthMatrix = (monthKey: string): CalendarDay[][] => {
   return weeks;
 };
 
-export const WEEKDAY_LABELS = WEEKDAY_NAMES;
+/** Iniciales de lunes a domingo en el idioma activo (ej. L M X J V S D en
+ * español, M T W T F S S en inglés) — antes estaban fijas en español. */
+export const getWeekdayLabels = (): string[] => {
+  const locale = getLocale();
+  const monday = new Date(2024, 0, 1); // un lunes cualquiera, de referencia
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    const label = new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(d);
+    return label.toUpperCase();
+  });
+};
 
 export const shiftMonthKey = (monthKey: string, delta: number): string => {
   const [y, m] = monthKey.split('-').map(Number);

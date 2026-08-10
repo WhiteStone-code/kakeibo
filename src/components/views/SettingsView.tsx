@@ -4,6 +4,7 @@ import { THEMES } from '../../data/themes';
 import { useExpenseCategories, useAllCategories } from '../../hooks/useCategories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
 import { useT } from '../../i18n/useT';
+import { translateWithFallback } from '../../i18n/translations';
 import CategoryManager from '../CategoryManager';
 import RecurringManager from '../RecurringManager';
 import CurrencyPicker from '../CurrencyPicker';
@@ -18,7 +19,9 @@ export default function SettingsView() {
   const expenseCategories = useExpenseCategories();
   const allCategories = useAllCategories();
   const categoryLabel = useCategoryLabel();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const themeName = (id: string, fallback: string) => translateWithFallback(`theme.${id}.name`, lang, fallback);
+  const themeTagline = (id: string, fallback: string) => translateWithFallback(`theme.${id}.tagline`, lang, fallback);
   const fileRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -150,8 +153,8 @@ export default function SettingsView() {
             >
               <span className="text-2xl">{th.emoji}</span>
               <div className="min-w-0 flex-1">
-                <p className="font-display font-bold text-sm">{th.name}</p>
-                <p className="text-xs text-soft leading-tight truncate">{th.tagline}</p>
+                <p className="font-display font-bold text-sm">{themeName(th.id, th.name)}</p>
+                <p className="text-xs text-soft leading-tight truncate">{themeTagline(th.id, th.tagline)}</p>
               </div>
               <div className="flex -space-x-1.5 shrink-0">
                 {th.preview.map((c, i) => (

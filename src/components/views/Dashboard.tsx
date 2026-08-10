@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useStore } from '../../store/useStore';
-import { currentMonthKey, formatMoney, monthLabel } from '../../utils/format';
+import { currentMonthKey, formatMoney, formatDate, monthLabel } from '../../utils/format';
 import StatTile from '../StatTile';
 import CategoryDonut from '../charts/CategoryDonut';
 import TrendChart from '../charts/TrendChart';
@@ -139,7 +139,7 @@ export default function Dashboard({
                     <p className="font-semibold text-sm truncate">
                       {tx.note || categoryLabel(cat)}
                     </p>
-                    <p className="text-xs text-soft">{tx.date}</p>
+                    <p className="text-xs text-soft">{formatDate(tx.date)}</p>
                   </div>
                   <span
                     className={`font-bold tabular-nums text-sm ${

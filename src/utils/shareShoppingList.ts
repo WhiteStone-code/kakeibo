@@ -1,5 +1,7 @@
 import type { ShoppingItem } from '../types';
 import { formatMoney } from './format';
+import { useStore } from '../store/useStore';
+import { translate } from '../i18n/translations';
 
 /** Arma un texto plano de la lista, agrupado por tienda (lo que de verdad
  * ayuda al ir a comprar: "en Lidl: ..., en la panadería: ..."), listo para
@@ -14,8 +16,9 @@ export function buildShoppingListText(
   currency: string,
   title: string
 ): string {
+  const lang = useStore.getState().settings.language;
   const pending = items.filter((i) => !i.checked);
-  if (pending.length === 0) return `*${title}*\n\n(sin productos pendientes)`;
+  if (pending.length === 0) return `*${title}*\n\n${translate('shopping.share.noPending', lang)}`;
 
   const byStore = new Map<string, ShoppingItem[]>();
   const noStore: ShoppingItem[] = [];
@@ -39,7 +42,7 @@ export function buildShoppingListText(
     lines.push('');
   }
   if (noStore.length > 0) {
-    if (byStore.size > 0) lines.push('*Sin tienda asignada*');
+    if (byStore.size > 0) lines.push(`*${translate('shopping.share.noStoreAssigned', lang)}*`);
     noStore.forEach((i) => lines.push(renderItem(i)));
   }
 

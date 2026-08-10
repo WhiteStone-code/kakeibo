@@ -165,12 +165,12 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'Nunito', system-ui, 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Microsoft YaHei', sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 h1, h2, h3, .font-display {
-  font-family: 'Baloo 2', 'Nunito', system-ui, sans-serif;
+  font-family: 'Baloo 2', 'Nunito', system-ui, 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Microsoft YaHei', sans-serif;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
