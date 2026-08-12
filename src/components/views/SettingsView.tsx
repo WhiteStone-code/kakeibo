@@ -61,16 +61,16 @@ export default function SettingsView() {
       try {
         const data = JSON.parse(reader.result as string);
         useStore.setState((s) => ({ ...s, ...data }));
-        alert('¡Datos importados correctamente! 🌸');
+        alert(t('settings.importSuccess'));
       } catch {
-        alert('No se pudo leer el archivo. ¿Seguro que es un backup de Kakeibo?');
+        alert(t('settings.importError'));
       }
     };
     reader.readAsText(file);
   };
 
   const resetAll = () => {
-    if (confirm('Esto borrará todos tus movimientos, objetivos y logros. ¿Continuar?')) {
+    if (confirm(t('settings.resetConfirm'))) {
       useStore.setState({
         transactions: [],
         goals: [],

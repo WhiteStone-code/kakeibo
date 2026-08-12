@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Goal } from '../types';
 import { useStore } from '../store/useStore';
 import { useT } from '../i18n/useT';
-import { formatMoney, daysUntil } from '../utils/format';
+import { formatMoney, formatMoneyRound, daysUntil } from '../utils/format';
 
 export default function GoalCard({ goal }: { goal: Goal }) {
   const contributeToGoal = useStore((s) => s.contributeToGoal);
@@ -76,7 +76,7 @@ export default function GoalCard({ goal }: { goal: Goal }) {
                 onClick={() => contributeToGoal(goal.id, quick)}
                 className="card-soft px-2.5 py-1 rounded-full text-xs font-bold text-soft hover:text-accent"
               >
-                +{quick} {currency}
+                +{formatMoneyRound(quick, currency)}
               </button>
             ))}
           </div>

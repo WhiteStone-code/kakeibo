@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '../i18n/useT';
 
 export default function Modal({
   open,
@@ -12,6 +13,7 @@ export default function Modal({
   children: ReactNode;
   title?: string;
 }) {
+  const { t } = useT();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -44,6 +46,7 @@ export default function Modal({
                 <h2 className="font-display font-bold text-xl">{title}</h2>
                 <button
                   onClick={onClose}
+                  aria-label={t('common.close')}
                   className="text-soft hover:text-inherit text-xl leading-none px-2 py-1 rounded-full hover:bg-app-soft"
                 >
                   ✕

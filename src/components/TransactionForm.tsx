@@ -5,6 +5,7 @@ import { useExpenseCategories, useIncomeCategories } from '../hooks/useCategorie
 import { useCategoryLabel } from '../i18n/useCategoryLabel';
 import { useT } from '../i18n/useT';
 import { useStore } from '../store/useStore';
+import { currencySymbol, formatMoneyRound } from '../utils/format';
 import type { PaymentMethod, Transaction, TransactionType } from '../types';
 
 const PAYMENT_METHODS: { id: PaymentMethod; key: string; emoji: string }[] = [
@@ -144,7 +145,7 @@ export default function TransactionForm({
                 error ? 'border-[#e34948]' : 'border-theme focus:border-accent'
               }`}
             />
-            <span className="text-2xl font-bold text-soft">{currency}</span>
+            <span className="text-2xl font-bold text-soft">{currencySymbol(currency)}</span>
           </div>
           {error && <p className="text-xs font-semibold text-[#e34948] mt-1">{t('txform.amountError')}</p>}
           <div className="flex gap-1.5 mt-2 flex-wrap">
@@ -158,7 +159,7 @@ export default function TransactionForm({
                 }}
                 className="card-soft px-3 py-1 rounded-full text-xs font-bold text-soft hover:text-accent"
               >
-                {quick} {currency}
+                {formatMoneyRound(quick, currency)}
               </button>
             ))}
           </div>

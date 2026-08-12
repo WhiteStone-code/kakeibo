@@ -1,5 +1,5 @@
 import { useStore } from '../store/useStore';
-import { getQuoteForDay } from '../data/quotes';
+import { getQuoteIndexForDay } from '../data/quotes';
 import { useT } from '../i18n/useT';
 
 const MASCOTS: Record<string, string> = {
@@ -14,7 +14,7 @@ export default function MascotTip() {
   const theme = useStore((s) => s.settings.theme);
   const userName = useStore((s) => s.settings.userName);
   const { t } = useT();
-  const quote = getQuoteForDay();
+  const quote = t(`quote.${getQuoteIndexForDay()}`);
   const mascot = MASCOTS[theme] ?? '🐢';
 
   return (

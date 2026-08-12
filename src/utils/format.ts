@@ -24,6 +24,38 @@ export const formatMoney = (amount: number, currency = 'EUR'): string => {
   }
 };
 
+/** Igual que formatMoney pero sin decimales — pensado para botones de
+ * cantidad rápida (+5, +10...) donde mostrar "5,00 €" es ruido innecesario. */
+export const formatMoneyRound = (amount: number, currency = 'EUR'): string => {
+  const locale = getLocale();
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'symbol',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${Math.round(amount).toLocaleString(locale)} ${currency}`;
+  }
+};
+
+/** Solo el símbolo/código de la divisa (ej. "€", "$", "CHF"), para pintarlo
+ * junto a un input en vez del código ISO en crudo ("EUR"). */
+export const currencySymbol = (currency = 'EUR'): string => {
+  const locale = getLocale();
+  try {
+    const parts = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'symbol',
+    }).formatToParts(0);
+    return parts.find((p) => p.type === 'currency')?.value ?? currency;
+  } catch {
+    return currency;
+  }
+};
+
 export const currentMonthKey = (date: Date = new Date()): string => date.toISOString().slice(0, 10).slice(0, 7);
 
 export const monthLabel = (monthKey: string): string => {

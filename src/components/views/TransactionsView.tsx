@@ -4,9 +4,11 @@ import { useAllCategories } from '../../hooks/useCategories';
 import { getCategory } from '../../data/categories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
 import { useT } from '../../i18n/useT';
-import { formatMoney, formatDate } from '../../utils/format';
+import { formatMoney, formatDate, currentMonthKey, shiftMonthKey } from '../../utils/format';
 import SpendingCalendar from '../SpendingCalendar';
 import type { Transaction } from '../../types';
+
+type Period = 'mes' | '3m' | 'todo';
 
 export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction) => void }) {
   const transactions = useStore((s) => s.transactions);
@@ -17,12 +19,23 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
   const { t } = useT();
   const [filter, setFilter] = useState<'todos' | 'gasto' | 'ingreso'>('todos');
   const [view, setView] = useState<'lista' | 'calendario'>('lista');
+  // Por defecto "todo el histórico" para no ocultar nada de golpe a quien ya
+  // usaba la app — el filtro de período es solo una ayuda opcional para no
+  // tener que hacer scroll infinito cuando ya llevas meses registrando.
+  const [period, setPeriod] = useState<Period>('todo');
+
+  const periodStart = useMemo(() => {
+    if (period === 'todo') return null;
+    const nBack = period === 'mes' ? 0 : 2;
+    return shiftMonthKey(currentMonthKey(), -nBack);
+  }, [period]);
 
   const sorted = useMemo(() => {
     return [...transactions]
       .filter((t) => filter === 'todos' || t.type === filter)
+      .filter((t) => !periodStart || t.date.slice(0, 7) >= periodStart)
       .sort((a, b) => b.createdAt - a.createdAt);
-  }, [transactions, filter]);
+  }, [transactions, filter, periodStart]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof sorted>();
@@ -70,6 +83,26 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
         </div>
       </div>
 
+      {view === 'lista' && (
+        <div className="flex gap-1 p-1 bg-app-soft rounded-2xl w-fit">
+          {(['mes', '3m', 'todo'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                period === p ? 'btn-accent' : 'text-soft'
+              }`}
+            >
+              {p === 'mes'
+                ? t('transactions.periodThisMonth')
+                : p === '3m'
+                  ? t('transactions.periodLast3')
+                  : t('transactions.periodAll')}
+            </button>
+          ))}
+        </div>
+      )}
+
       {view === 'calendario' ? (
         <div className="card p-5">
           <SpendingCalendar />
@@ -77,7 +110,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
       ) : grouped.length === 0 ? (
         <div className="card p-10 text-center text-soft">
           <p className="text-3xl mb-2">🍃</p>
-          {t('transactions.empty')}
+          {transactions.length === 0 ? t('transactions.empty') : t('transactions.emptyPeriod')}
         </div>
       ) : (
         grouped.map(([date, items]) => (
@@ -113,7 +146,7 @@ export default function TransactionsView({ onEdit }: { onEdit: (tx: Transaction)
                     <button
                       onClick={() => removeTransaction(tx.id)}
                       aria-label={t('common.delete')}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-soft hover:text-[#e34948] text-sm px-1.5"
+                      className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-soft opacity-60 hover:opacity-100 hover:text-[#e34948] hover:bg-[#e3494811] transition-all md:opacity-0 md:group-hover:opacity-100"
                       title={t('common.delete')}
                     >
                       ✕

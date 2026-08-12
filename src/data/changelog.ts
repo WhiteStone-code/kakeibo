@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.8.1';
+export const APP_VERSION = '0.9.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,18 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.9.0',
+    date: '12 ago 2026',
+    title: 'Repaso de pulido: más fácil de usar cada día',
+    items: [
+      'Arreglado: en Movimientos y en la Lista de la compra, el botón de borrar (✕) solo aparecía al pasar el ratón por encima — en el móvil, donde no hay ratón, no había forma de verlo. Ahora se ve siempre',
+      'Arreglado: la frase motivadora del panel ("Consejo para...") se quedaba en español aunque cambiaras de idioma. Ahora tiene sus 6 traducciones como el resto de la app',
+      'Arreglado: en Añadir movimiento y en Objetivos, las cantidades rápidas (2, 5, 10...) mostraban el código de la divisa en crudo ("2 EUR") en vez del símbolo ("2 €") como en el resto de la app',
+      'Nuevo: en Movimientos, filtro rápido por período (este mes / últimos 3 meses / todo el histórico) para no tener que hacer scroll infinito según pase el tiempo',
+      'Mejor accesibilidad: se ve con claridad qué elemento tiene el foco al navegar con teclado (tabulador), y varios botones de solo icono ahora llevan su etiqueta para lectores de pantalla',
+    ],
+  },
   {
     version: '0.8.1',
     date: '10 ago 2026',

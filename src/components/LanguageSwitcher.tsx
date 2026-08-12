@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { LANGUAGES } from '../i18n/translations';
+import { useT } from '../i18n/useT';
 
 /** Selector de idioma, pensado para ir arriba a la derecha de la barra
  * superior — cambiar aquí cambia toda la interfaz al instante. */
@@ -10,6 +11,7 @@ export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const current = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0];
+  const { t } = useT();
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -24,7 +26,8 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => setOpen((v) => !v)}
         className="card-soft w-10 h-10 rounded-full flex items-center justify-center text-lg"
-        title="Idioma / Language"
+        aria-label={t('language.switcherLabel')}
+        title={t('language.switcherLabel')}
       >
         {current.flag}
       </button>
