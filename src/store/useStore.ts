@@ -35,6 +35,11 @@ interface StoreState {
   customStores: string[];
   customOccasions: string[];
   frequentItemNames: string[];
+  /** Memoria de "la última vez lo compraste en X" por producto (clave en
+   * minúsculas) — sobrevive a vaciar la lista, así la próxima vez que
+   * apuntes "Leche" te lo recuerda aunque ya hayas comprado y borrado esa
+   * lista hace semanas. */
+  productStoreHistory: Record<string, string>;
   shoppingCheckedCount: number;
   recurringItems: RecurringItem[];
   settings: UserSettings;
@@ -65,6 +70,7 @@ interface StoreState {
     neededBy?: string | null;
   }) => void;
   toggleShoppingItem: (id: string) => void;
+  getLastStoreFor: (name: string) => string | null;
   removeShoppingItem: (id: string) => void;
   updateShoppingItem: (
     id: string,
@@ -119,6 +125,7 @@ export const useStore = create<StoreState>()(
       customStores: [],
       customOccasions: [],
       frequentItemNames: [],
+      productStoreHistory: {},
       shoppingCheckedCount: 0,
       recurringItems: [],
       settings: defaultSettings,
@@ -276,8 +283,17 @@ export const useStore = create<StoreState>()(
                 ? [...state.customOccasions, occasion]
                 : state.customOccasions,
             frequentItemNames,
+            productStoreHistory: store
+              ? { ...state.productStoreHistory, [nameLower]: store }
+              : state.productStoreHistory,
           };
         });
+      },
+
+      /** "¿Dónde lo compraste la última vez?" — null si nunca se ha
+       * comprado ese producto en una tienda concreta. */
+      getLastStoreFor: (name) => {
+        return get().productStoreHistory[name.trim().toLowerCase()] ?? null;
       },
 
       toggleShoppingItem: (id) => {
@@ -320,6 +336,13 @@ export const useStore = create<StoreState>()(
             occasion && !state.customOccasions.includes(occasion)
               ? [...state.customOccasions, occasion]
               : state.customOccasions,
+          productStoreHistory: (() => {
+            const item = state.shoppingList.find((i) => i.id === id);
+            const name = (patch.name ?? item?.name)?.trim().toLowerCase();
+            return store && name
+              ? { ...state.productStoreHistory, [name]: store }
+              : state.productStoreHistory;
+          })(),
         }));
       },
 

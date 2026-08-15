@@ -15,12 +15,29 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [theme, setTheme] = useState<ThemeId>('zen');
+  const [periodicGoal, setPeriodicGoal] = useState(false);
 
   const finish = () => {
     // lastSeenVersion se marca ya aquí: quien acaba de conocer la app no
     // necesita ver el historial de "novedades" de versiones anteriores.
-    updateSettings({ userName: name.trim(), theme, onboarded: true, lastSeenVersion: APP_VERSION });
+    updateSettings({
+      userName: name.trim(),
+      theme,
+      onboarded: true,
+      lastSeenVersion: APP_VERSION,
+      periodicGoalEnabled: periodicGoal,
+    });
   };
+
+  const TOUR_ITEMS: { key: string; emoji: string; nameKey: string; descKey: string }[] = [
+    { key: 'dashboard', emoji: '🏠', nameKey: 'nav.dashboard', descKey: 'onboarding.tour.dashboard' },
+    { key: 'transactions', emoji: '📒', nameKey: 'nav.transactions', descKey: 'onboarding.tour.transactions' },
+    { key: 'goals', emoji: '🎯', nameKey: 'nav.goals', descKey: 'onboarding.tour.goals' },
+    { key: 'shopping', emoji: '🛒', nameKey: 'nav.shopping', descKey: 'onboarding.tour.shopping' },
+    { key: 'invest', emoji: '📈', nameKey: 'nav.invest', descKey: 'onboarding.tour.invest' },
+    { key: 'reflection', emoji: '🧘', nameKey: 'nav.reflection', descKey: 'onboarding.tour.reflection' },
+    { key: 'achievements', emoji: '🏆', nameKey: 'nav.achievements', descKey: 'onboarding.tour.achievements' },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-app flex items-center justify-center p-4">
@@ -88,9 +105,49 @@ export default function Onboarding() {
                 </button>
               ))}
             </div>
-            <button onClick={finish} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
-              {t('onboarding.start')}
+            <button onClick={() => setStep(2)} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
+              {t('onboarding.continue')}
             </button>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <div className="text-center">
+              <h2 className="font-display font-extrabold text-xl">{t('onboarding.tourTitle')}</h2>
+              <p className="text-soft text-sm mt-1">{t('onboarding.tourSub')}</p>
+            </div>
+            <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+              {TOUR_ITEMS.map((item) => (
+                <div key={item.key} className="flex items-start gap-3 p-2.5 rounded-2xl bg-app-soft">
+                  <span className="text-xl shrink-0">{item.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="font-display font-bold text-sm">{t(item.nameKey)}</p>
+                    <p className="text-xs text-soft leading-snug">{t(item.descKey)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <label className="flex items-start gap-2.5 p-3 rounded-2xl border-2 border-theme cursor-pointer">
+              <input
+                type="checkbox"
+                checked={periodicGoal}
+                onChange={(e) => setPeriodicGoal(e.target.checked)}
+                className="w-5 h-5 accent-[var(--accent)] mt-0.5 shrink-0"
+              />
+              <span className="text-xs text-soft leading-snug">{t('onboarding.periodicGoalOffer')}</span>
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(1)}
+                className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
+              >
+                {t('onboarding.back')}
+              </button>
+              <button onClick={finish} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
+                {t('onboarding.start')}
+              </button>
+            </div>
           </>
         )}
       </motion.div>

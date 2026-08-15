@@ -9,6 +9,8 @@ import DailyAllowanceCard from '../DailyAllowanceCard';
 import BudgetsOverview from '../BudgetsOverview';
 import PeriodicGoalCard from '../PeriodicGoalCard';
 import RecurringDueCard from '../RecurringDueCard';
+import ReflectionCard from '../ReflectionCard';
+import KakeiboSplit from '../KakeiboSplit';
 import { getCategory } from '../../data/categories';
 import { useAllCategories } from '../../hooks/useCategories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
@@ -108,8 +110,11 @@ export default function Dashboard({
               {t('dashboard.createFirstGoal')}
             </button>
           )}
+          <ReflectionCard setView={setView} />
         </div>
       </div>
+
+      <KakeiboSplit />
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="card p-5">

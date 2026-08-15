@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.9.0';
+export const APP_VERSION = '0.10.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,20 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.10.0',
+    date: '12 ago 2026',
+    title: 'La compra recuerda dónde compras, inversión con perfil de riesgo y más conexión entre secciones',
+    items: [
+      'Nuevo: la lista de la compra recuerda dónde compraste cada producto la última vez ("La última vez lo compraste en Coop") y te lo sugiere al escribirlo otra vez',
+      '"¿Y si invierto?" ahora es "Planificación financiera": elige tu perfil (conservador/moderado/dinámico) para destacarlo en la gráfica, y hay una comparativa neutral de tipos de plataforma (neobroker, banco, gestor automatizado) — sin recomendar ninguna marca concreta',
+      'Nuevo en el Panel: "¿En qué se fue tu dinero?" — el desglose real en las 4 categorías del método kakeibo (supervivencia, ocio, cultura, extra), también dentro de la Reflexión mensual',
+      'La Reflexión mensual ahora tiene su propia tarjeta en el Panel, para no tener que acordarte de entrar por tu cuenta',
+      'Aviso anticipado de gastos/ingresos fijos: además del aviso el día que toca, ahora también ves los que llegan en los próximos 3 días',
+      'Onboarding ampliado: un tercer paso con un repaso rápido de cada sección de la app, y la opción de activar ya la meta periódica',
+      'Nueva tarjeta en Ajustes explicando en claro por qué tus datos nunca salen de este navegador',
+    ],
+  },
   {
     version: '0.9.0',
     date: '12 ago 2026',

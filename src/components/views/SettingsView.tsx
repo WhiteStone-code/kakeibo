@@ -104,6 +104,12 @@ export default function SettingsView() {
         <p className="text-soft text-sm">{t('settings.subtitle')}</p>
       </div>
 
+      <div className="card p-5 flex flex-col gap-2 border-2 border-accent/30">
+        <p className="font-display font-bold text-sm">{t('settings.privacyTitle')}</p>
+        <p className="text-sm text-soft leading-relaxed">{t('settings.privacyBody')}</p>
+        <p className="text-xs text-soft italic border-t border-theme pt-2 mt-1">{t('settings.privacyNote')}</p>
+      </div>
+
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.name')}</label>
         <input

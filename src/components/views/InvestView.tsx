@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useStore } from '../../store/useStore';
-import { INVESTMENT_SCENARIOS, projectGrowth } from '../../data/investmentScenarios';
+import { INVESTMENT_SCENARIOS, RISK_PROFILES, projectGrowth } from '../../data/investmentScenarios';
 import { formatMoney } from '../../utils/format';
 import { useT } from '../../i18n/useT';
 import { translateWithFallback } from '../../i18n/translations';
@@ -37,6 +37,8 @@ export default function InvestView() {
   const [start, setStart] = useState(String(suggestedStart || 0));
   const [monthly, setMonthly] = useState(String(suggestedMonthly));
   const [years, setYears] = useState(10);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const highlightedScenarioId = RISK_PROFILES.find((p) => p.id === profileId)?.scenarioId ?? null;
 
   const startNum = parseFloat(start.replace(',', '.')) || 0;
   const monthlyNum = parseFloat(monthly.replace(',', '.')) || 0;
@@ -111,6 +113,25 @@ export default function InvestView() {
           </div>
         </div>
 
+        <div>
+          <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('invest.riskProfile.title')}</label>
+          <p className="text-xs text-soft -mt-0.5 mb-2">{t('invest.riskProfile.subtitle')}</p>
+          <div className="flex flex-wrap gap-2">
+            {RISK_PROFILES.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setProfileId(profileId === p.id ? null : p.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  profileId === p.id ? 'btn-accent' : 'card-soft text-soft'
+                }`}
+              >
+                <span>{p.emoji}</span> {t(`invest.riskProfile.${p.id}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={chartData} margin={{ left: -10 }}>
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 4" />
@@ -143,25 +164,39 @@ export default function InvestView() {
               }}
             />
             <Legend wrapperStyle={{ fontSize: 12, fontFamily: 'Nunito' }} iconType="plainline" />
-            {INVESTMENT_SCENARIOS.map((sc) => (
-              <Line
-                key={sc.id}
-                type="monotone"
-                dataKey={sc.id}
-                name={scenarioLabel(sc.id, sc.label)}
-                stroke={mode === 'dark' ? sc.colorDark : sc.color}
-                strokeWidth={2}
-                dot={false}
-              />
-            ))}
+            {INVESTMENT_SCENARIOS.map((sc) => {
+              const dimmed = highlightedScenarioId !== null && sc.id !== highlightedScenarioId;
+              return (
+                <Line
+                  key={sc.id}
+                  type="monotone"
+                  dataKey={sc.id}
+                  name={scenarioLabel(sc.id, sc.label)}
+                  stroke={mode === 'dark' ? sc.colorDark : sc.color}
+                  strokeWidth={sc.id === highlightedScenarioId ? 3 : 2}
+                  strokeOpacity={dimmed ? 0.3 : 1}
+                  dot={false}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {finals.map(({ sc, final, contributed }) => (
-            <div key={sc.id} className="card-soft p-4">
-              <p className="text-sm font-bold flex items-center gap-1.5">
-                <span>{sc.emoji}</span> {scenarioLabel(sc.id, sc.label)}
+            <div
+              key={sc.id}
+              className={`card-soft p-4 ${sc.id === highlightedScenarioId ? 'ring-2 ring-accent' : ''}`}
+            >
+              <p className="text-sm font-bold flex items-center gap-1.5 justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span>{sc.emoji}</span> {scenarioLabel(sc.id, sc.label)}
+                </span>
+                {sc.id === highlightedScenarioId && (
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wide">
+                    {t('invest.riskProfile.yourProfile')}
+                  </span>
+                )}
               </p>
               <p
                 className="font-display font-extrabold text-lg mt-1"
@@ -180,6 +215,22 @@ export default function InvestView() {
         </div>
 
         <p className="text-xs text-soft italic border-t border-theme pt-3">{t('invest.disclaimer')}</p>
+      </div>
+
+      <div className="card p-5 flex flex-col gap-4">
+        <div>
+          <h2 className="font-display font-bold text-base">{t('invest.platforms.title')}</h2>
+          <p className="text-xs text-soft mt-0.5">{t('invest.platforms.subtitle')}</p>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {(['neobroker', 'bank', 'robo'] as const).map((k) => (
+            <div key={k} className="card-soft p-4">
+              <p className="text-sm font-bold">{t(`invest.platforms.${k}.title`)}</p>
+              <p className="text-xs text-soft mt-1.5 leading-snug">{t(`invest.platforms.${k}.desc`)}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-soft italic border-t border-theme pt-3">{t('invest.platforms.disclaimer')}</p>
       </div>
 
       <CurrencyConverter defaultCurrency={currency} />

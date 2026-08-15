@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { currentMonthKey, formatMoney, monthLabel } from '../../utils/format';
 import { useT } from '../../i18n/useT';
+import KakeiboSplit from '../KakeiboSplit';
 
 export default function ReflectionView() {
   const transactions = useStore((s) => s.transactions);
@@ -97,6 +98,9 @@ export default function ReflectionView() {
           <div className="mt-2 px-3 py-2.5 rounded-xl bg-app-soft font-bold text-accent">
             {formatMoney(gastoReal, currency)}{' '}
             <span className="text-soft font-normal text-xs">{t('reflection.q3sub')}</span>
+          </div>
+          <div className="mt-2">
+            <KakeiboSplit monthKey={month} mode="inline" />
           </div>
         </div>
 

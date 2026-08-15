@@ -49,30 +49,49 @@ export const CUSTOM_CATEGORY_COLORS = [
   '#0d9488', '#b45309', '#4338ca', '#dc2626', '#059669',
 ];
 
-export const KAKEIBO_GROUPS: Record<string, { label: string; emoji: string; desc: string }> = {
+// Colores de los 4 grupos Kakeibo — reutilizan los slots 1-4 (azul, naranja,
+// aqua, amarillo) de la paleta categórica ya validada (skill dataviz):
+// pasan CVD/contraste en la lista de pares *adyacentes*, que es la que
+// aplica aquí porque siempre se muestran en el mismo orden fijo, en una
+// barra segmentada con etiqueta directa en cada tramo (nunca solo color).
+export const KAKEIBO_GROUPS: Record<string, { label: string; emoji: string; desc: string; color: string; colorDark: string }> = {
   supervivencia: {
     label: 'Supervivencia',
     emoji: '🍚',
     desc: 'Lo esencial: comida, casa, transporte, salud.',
+    color: '#2a78d6',
+    colorDark: '#3987e5',
   },
   ocio: {
     label: 'Ocio y deseos',
     emoji: '🎈',
     desc: 'Lo que te apetece: compras, ropa, salidas.',
+    color: '#eb6834',
+    colorDark: '#d95926',
   },
   cultura: {
     label: 'Cultura',
     emoji: '🎓',
     desc: 'Crecimiento personal: libros, cursos, aprendizaje.',
+    color: '#1baf7a',
+    colorDark: '#199e70',
   },
   extra: {
     label: 'Extra',
     emoji: '✨',
     desc: 'Imprevistos, suscripciones y ahorro.',
+    color: '#eda100',
+    colorDark: '#c98500',
   },
   ingreso: {
     label: 'Ingresos',
     emoji: '💰',
     desc: 'Todo lo que entra.',
+    color: '#0ca30c',
+    colorDark: '#3fc93f',
   },
 };
+
+/** Los 4 grupos de gasto reales del método Kakeibo, en orden fijo (excluye
+ * "ingreso", que no es un grupo de gasto). */
+export const EXPENSE_KAKEIBO_GROUP_IDS = ['supervivencia', 'ocio', 'cultura', 'extra'] as const;
