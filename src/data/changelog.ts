@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.11.0';
+export const APP_VERSION = '0.11.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,15 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.11.1',
+    date: '15 ago 2026',
+    title: 'Revisión de móvil',
+    items: [
+      'Arreglado: la etiqueta "Ahorrado en metas" del Panel se cortaba con puntos suspensivos en pantallas de móvil — ahora se parte en dos líneas en vez de cortarse',
+      'Revisado a fondo el formato en móvil (iPhone y Android, varios tamaños): formulario de movimiento, listas, inversión, ajustes y temas — sin más problemas encontrados',
+    ],
+  },
   {
     version: '0.11.0',
     date: '13 ago 2026',
