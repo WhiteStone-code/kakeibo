@@ -104,6 +104,7 @@ const defaultSettings: UserSettings = {
   periodicGoalAmount: 0,
   periodicGoalFrequency: 'mensual',
   periodicGoalType: 'ahorro',
+  financialFocus: [],
 };
 
 // Símbolos usados antes de pasar a códigos ISO (v1 → v2) — se migran solos.

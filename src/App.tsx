@@ -104,7 +104,11 @@ export default function App() {
       <Sidebar view={view} setView={setView} onShowWhatsNew={() => setWhatsNewOpen(true)} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <TopBar onAdd={openNewTransaction} />
+        <TopBar
+          onAdd={openNewTransaction}
+          onShowNotifications={() => setWhatsNewOpen(true)}
+          hasUnreadNotifications={lastSeenVersion !== APP_VERSION}
+        />
         <main className="flex-1 px-4 md:px-8 py-6 max-w-6xl w-full mx-auto">
           {view === 'dashboard' && <Dashboard setView={setView} onAddTransaction={openNewTransaction} />}
           {view === 'transacciones' && <TransactionsView onEdit={openEditTransaction} />}

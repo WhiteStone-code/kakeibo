@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.10.0';
+export const APP_VERSION = '0.11.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,16 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.11.0',
+    date: '13 ago 2026',
+    title: 'Campana de notificaciones, tu enfoque financiero y compartir el Excel',
+    items: [
+      'Nuevo: campana de notificaciones arriba a la derecha — accede a las Novedades cuando quieras, con un punto rojo si hay algo nuevo desde tu última visita',
+      'Onboarding ampliado: elige tu enfoque (ahorro, compras diarias, inversión, control de deudas, metas grandes) — editable luego en Ajustes en cualquier momento',
+      'Nuevo botón "Compartir Excel" en Ajustes: genera el mismo informe y lo manda directo a WhatsApp, Telegram o donde elijas desde el móvil, sin pasar por ningún servidor',
+    ],
+  },
   {
     version: '0.10.0',
     date: '12 ago 2026',

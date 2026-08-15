@@ -3,7 +3,15 @@ import { useT } from '../i18n/useT';
 import { translateWithFallback } from '../i18n/translations';
 import LanguageSwitcher from './LanguageSwitcher';
 
-export default function TopBar({ onAdd }: { onAdd: () => void }) {
+export default function TopBar({
+  onAdd,
+  onShowNotifications,
+  hasUnreadNotifications,
+}: {
+  onAdd: () => void;
+  onShowNotifications: () => void;
+  hasUnreadNotifications: boolean;
+}) {
   const { streak, xp, level, next, unlockedCount } = useDerivedStats();
   const { t, lang } = useT();
   const levelTitle = translateWithFallback(`level.${level.level}`, lang, level.title);
@@ -38,6 +46,17 @@ export default function TopBar({ onAdd }: { onAdd: () => void }) {
       </div>
 
       <div className="flex items-center gap-2.5">
+        <button
+          onClick={onShowNotifications}
+          aria-label={t('topbar.notifications')}
+          title={t('topbar.notifications')}
+          className="relative card-soft w-10 h-10 rounded-full flex items-center justify-center text-lg"
+        >
+          🔔
+          {hasUnreadNotifications && (
+            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#e34948] border-2 border-surface" />
+          )}
+        </button>
         <LanguageSwitcher />
         <button
           onClick={onAdd}

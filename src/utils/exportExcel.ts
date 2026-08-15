@@ -22,10 +22,9 @@ function styleHeaderRow(row: ExcelJS.Row) {
   row.height = 20;
 }
 
-/** Genera y descarga un .xlsx con el histórico completo, organizado en
- * varias hojas y con formato (colores, moneda, congelado, autofiltro) —
- * no solo una tabla plana. */
-export async function exportToExcel(state: ExportableState, allCategories: Category[]) {
+/** Construye el .xlsx completo (histórico + resumen + objetivos) con
+ * formato — usado tanto para descargarlo como para compartirlo. */
+async function buildWorkbook(state: ExportableState, allCategories: Category[]): Promise<ExcelJS.Workbook> {
   const { transactions, goals, settings } = state;
   const currency = settings.currency;
   const wb = new ExcelJS.Workbook();
@@ -152,6 +151,14 @@ export async function exportToExcel(state: ExportableState, allCategories: Categ
     row.getCell('pct').numFmt = '0%';
   });
 
+  return wb;
+}
+
+/** Genera y descarga un .xlsx con el histórico completo, organizado en
+ * varias hojas y con formato (colores, moneda, congelado, autofiltro) —
+ * no solo una tabla plana. */
+export async function exportToExcel(state: ExportableState, allCategories: Category[]) {
+  const wb = await buildWorkbook(state, allCategories);
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -162,4 +169,41 @@ export async function exportToExcel(state: ExportableState, allCategories: Categ
   a.download = `kakeibo-${new Date().toISOString().slice(0, 10)}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Genera el mismo .xlsx que `exportToExcel` pero, en vez de descargarlo,
+ * lo comparte como archivo con `navigator.share` (WhatsApp, Telegram,
+ * email, lo que elija el usuario en su móvil) — sin pasar por ningún
+ * servidor: el fichero se genera en el propio navegador y se entrega
+ * directo a la app que elijas. Si el navegador no soporta compartir
+ * archivos (la mayoría de escritorio), cae en descargarlo igual. */
+export async function shareExcelReport(state: ExportableState, allCategories: Category[]) {
+  const wb = await buildWorkbook(state, allCategories);
+  const buffer = await wb.xlsx.writeBuffer();
+  const fileName = `kakeibo-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const file = new File([buffer], fileName, {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+
+  if (typeof navigator !== 'undefined' && 'share' in navigator && 'canShare' in navigator && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Kakeibo' });
+      return true;
+    } catch {
+      // El usuario canceló el diálogo de compartir — no es un error real,
+      // no hace falta caer en la descarga.
+      return false;
+    }
+  }
+
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+  return false;
 }

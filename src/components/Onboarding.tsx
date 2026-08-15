@@ -5,7 +5,9 @@ import { THEMES } from '../data/themes';
 import { APP_VERSION } from '../data/changelog';
 import { useT } from '../i18n/useT';
 import { translateWithFallback } from '../i18n/translations';
-import type { ThemeId } from '../types';
+import type { FinancialFocus, ThemeId } from '../types';
+
+const FOCUS_OPTIONS: FinancialFocus[] = ['ahorro', 'compras_diarias', 'inversion', 'control_deudas', 'metas_grandes'];
 
 export default function Onboarding() {
   const updateSettings = useStore((s) => s.updateSettings);
@@ -15,7 +17,11 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [theme, setTheme] = useState<ThemeId>('zen');
+  const [focus, setFocus] = useState<FinancialFocus[]>([]);
   const [periodicGoal, setPeriodicGoal] = useState(false);
+
+  const toggleFocus = (f: FinancialFocus) =>
+    setFocus((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
 
   const finish = () => {
     // lastSeenVersion se marca ya aquí: quien acaba de conocer la app no
@@ -26,6 +32,7 @@ export default function Onboarding() {
       onboarded: true,
       lastSeenVersion: APP_VERSION,
       periodicGoalEnabled: periodicGoal,
+      financialFocus: focus,
     });
   };
 
@@ -114,6 +121,40 @@ export default function Onboarding() {
         {step === 2 && (
           <>
             <div className="text-center">
+              <h2 className="font-display font-extrabold text-xl">{t('onboarding.focusTitle')}</h2>
+              <p className="text-soft text-sm mt-1">{t('onboarding.focusSub')}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {FOCUS_OPTIONS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => toggleFocus(f)}
+                  className={`px-3.5 py-2 rounded-2xl text-sm font-bold transition-all ${
+                    focus.includes(f) ? 'btn-accent' : 'card-soft text-soft'
+                  }`}
+                >
+                  {t(`focus.${f}`)}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(1)}
+                className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
+              >
+                {t('onboarding.back')}
+              </button>
+              <button onClick={() => setStep(3)} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
+                {t('onboarding.continue')}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <div className="text-center">
               <h2 className="font-display font-extrabold text-xl">{t('onboarding.tourTitle')}</h2>
               <p className="text-soft text-sm mt-1">{t('onboarding.tourSub')}</p>
             </div>
@@ -139,7 +180,7 @@ export default function Onboarding() {
             </label>
             <div className="flex gap-2">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
               >
                 {t('onboarding.back')}

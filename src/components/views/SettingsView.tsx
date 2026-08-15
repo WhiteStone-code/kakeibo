@@ -9,7 +9,9 @@ import CategoryManager from '../CategoryManager';
 import RecurringManager from '../RecurringManager';
 import CurrencyPicker from '../CurrencyPicker';
 import LiveRateTicker from '../LiveRateTicker';
-import type { ThemeId } from '../../types';
+import type { FinancialFocus, ThemeId } from '../../types';
+
+const FOCUS_OPTIONS: FinancialFocus[] = ['ahorro', 'compras_diarias', 'inversion', 'control_deudas', 'metas_grandes'];
 
 export default function SettingsView() {
   const settings = useStore((s) => s.settings);
@@ -97,6 +99,21 @@ export default function SettingsView() {
     }
   };
 
+  const handleShareExcel = async () => {
+    setExporting(true);
+    try {
+      // Genera el mismo .xlsx y lo entrega directo a WhatsApp/Telegram/
+      // email vía el selector nativo del móvil — sin pasar por ningún
+      // servidor. En escritorio (sin soporte para compartir archivos) cae
+      // en descargarlo igual, así el botón nunca se queda sin hacer nada.
+      const { shareExcelReport } = await import('../../utils/exportExcel');
+      const state = useStore.getState();
+      await shareExcelReport(state, allCategories);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 pb-24 md:pb-8 max-w-2xl">
       <div>
@@ -173,6 +190,34 @@ export default function SettingsView() {
               </div>
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="card p-5 flex flex-col gap-3">
+        <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.focusTitle')}</label>
+        <p className="text-xs text-soft -mt-1">{t('settings.focusDesc')}</p>
+        <div className="flex flex-wrap gap-2">
+          {FOCUS_OPTIONS.map((f) => {
+            const active = settings.financialFocus.includes(f);
+            return (
+              <button
+                key={f}
+                type="button"
+                onClick={() =>
+                  updateSettings({
+                    financialFocus: active
+                      ? settings.financialFocus.filter((x) => x !== f)
+                      : [...settings.financialFocus, f],
+                  })
+                }
+                className={`px-3.5 py-2 rounded-2xl text-sm font-bold transition-all ${
+                  active ? 'btn-accent' : 'card-soft text-soft'
+                }`}
+              >
+                {t(`focus.${f}`)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -274,6 +319,13 @@ export default function SettingsView() {
             className="card-soft font-bold px-4 py-2 rounded-xl text-sm text-accent disabled:opacity-60"
           >
             {exporting ? t('settings.exporting') : t('settings.exportExcel')}
+          </button>
+          <button
+            onClick={handleShareExcel}
+            disabled={exporting}
+            className="card-soft font-bold px-4 py-2 rounded-xl text-sm text-accent disabled:opacity-60"
+          >
+            {t('settings.shareExcel')}
           </button>
           <button
             onClick={() => fileRef.current?.click()}

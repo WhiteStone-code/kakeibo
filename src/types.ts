@@ -158,6 +158,12 @@ export interface UserSettings {
   periodicGoalAmount: number;
   periodicGoalFrequency: PeriodicGoalFrequency;
   periodicGoalType: PeriodicGoalType;
+  /** En qué dice el usuario que quiere centrarse (elegido en el onboarding,
+   * editable luego en Ajustes) — puramente informativo/de preferencia
+   * personal, no cambia ningún cálculo. */
+  financialFocus: FinancialFocus[];
 }
+
+export type FinancialFocus = 'ahorro' | 'compras_diarias' | 'inversion' | 'control_deudas' | 'metas_grandes';
 
 export type LanguageCode = 'es' | 'en' | 'pt' | 'it' | 'fr' | 'de';
