@@ -100,6 +100,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     description: 'Usaste 3 tiendas distintas en tu lista de la compra.',
     check: (ctx) => ctx.distinctStoresUsed >= 3,
   },
+  {
+    id: 'carro-completo',
+    emoji: '🛒',
+    title: 'Carro completo',
+    description: 'Marcaste toda la lista de la compra — misión cumplida.',
+    check: (ctx) => ctx.shoppingListsCompleted >= 1,
+  },
 ];
 
 export const evaluateAchievements = (ctx: AchievementContext): string[] =>

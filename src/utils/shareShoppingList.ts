@@ -48,3 +48,13 @@ export function buildShoppingListText(
 
   return lines.join('\n').trim();
 }
+
+/** Abre el cliente de correo del dispositivo con la lista ya rellenada —
+ * mailto: es el único "email" que se puede hacer sin backend ni cuenta de
+ * envío propia: abre lo que el usuario ya tenga configurado (Gmail,
+ * Outlook, Mail...), nunca pasa por un servidor nuestro. */
+export function openEmailShare(items: ShoppingItem[], currency: string, title: string) {
+  const body = buildShoppingListText(items, currency, title);
+  const url = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+  window.open(url, '_blank');
+}

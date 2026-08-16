@@ -100,6 +100,9 @@ export interface AchievementContext {
   monthsTracked: number;
   shoppingCheckedCount: number;
   distinctStoresUsed: number;
+  /** Veces que se ha vaciado una lista de la compra teniéndola toda
+   * marcada (no cuenta una lista vacía porque no había nada que comprar). */
+  shoppingListsCompleted: number;
 }
 
 export interface UnlockedAchievement {
@@ -162,6 +165,18 @@ export interface UserSettings {
    * editable luego en Ajustes) — puramente informativo/de preferencia
    * personal, no cambia ningún cálculo. */
   financialFocus: FinancialFocus[];
+  /** Fecha de nacimiento (ISO), 100% opcional — solo para el toque curioso
+   * del signo del zodiaco y "cuántos días faltan para tu cumpleaños". Se
+   * puede quitar en cualquier momento sin perder nada más. */
+  birthDate: string | null;
+  /** Enseña el signo del zodiaco calculado a partir de birthDate — apagable
+   * independientemente de borrar la fecha, por si alguien quiere guardar el
+   * cumpleaños pero no ver la parte "curiosa". */
+  showZodiac: boolean;
+  /** País donde compra habitualmente — solo para adaptar qué cadenas de
+   * supermercado se sugieren primero en la lista de la compra (ver
+   * data/stores.ts); null = mostrar todas sin preferencia. */
+  country: string | null;
 }
 
 export type FinancialFocus = 'ahorro' | 'compras_diarias' | 'inversion' | 'control_deudas' | 'metas_grandes';

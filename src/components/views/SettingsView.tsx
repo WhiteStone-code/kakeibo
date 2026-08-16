@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { THEMES } from '../../data/themes';
+import { COUNTRIES } from '../../data/countries';
+import { getZodiacSign } from '../../data/zodiac';
 import { useExpenseCategories, useAllCategories } from '../../hooks/useCategories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
 import { useT } from '../../i18n/useT';
@@ -9,6 +11,7 @@ import CategoryManager from '../CategoryManager';
 import RecurringManager from '../RecurringManager';
 import CurrencyPicker from '../CurrencyPicker';
 import LiveRateTicker from '../LiveRateTicker';
+import DeleteDataModal from '../DeleteDataModal';
 import type { FinancialFocus, ThemeId } from '../../types';
 
 const FOCUS_OPTIONS: FinancialFocus[] = ['ahorro', 'compras_diarias', 'inversion', 'control_deudas', 'metas_grandes'];
@@ -26,6 +29,8 @@ export default function SettingsView() {
   const themeTagline = (id: string, fallback: string) => translateWithFallback(`theme.${id}.tagline`, lang, fallback);
   const fileRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const zodiac = settings.birthDate ? getZodiacSign(settings.birthDate) : null;
 
   const exportData = () => {
     const state = useStore.getState();
@@ -69,21 +74,6 @@ export default function SettingsView() {
       }
     };
     reader.readAsText(file);
-  };
-
-  const resetAll = () => {
-    if (confirm(t('settings.resetConfirm'))) {
-      useStore.setState({
-        transactions: [],
-        goals: [],
-        reflections: [],
-        unlocked: [],
-        budgets: {},
-        shoppingList: [],
-        lastCelebratedGoal: null,
-        lastUnlockedIds: [],
-      });
-    }
   };
 
   const handleExportExcel = async () => {
@@ -144,6 +134,68 @@ export default function SettingsView() {
           <p className="text-[11px] font-bold text-soft uppercase tracking-wide mb-1.5">{t('settings.liveRate')}</p>
           <LiveRateTicker base={settings.currency} />
         </div>
+      </div>
+
+      <div className="card p-5 flex flex-col gap-3">
+        <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.countryTitle')}</label>
+        <p className="text-xs text-soft -mt-1">{t('settings.countryDesc')}</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => updateSettings({ country: null })}
+            className={`px-3.5 py-2 rounded-2xl text-sm font-bold transition-all ${
+              !settings.country ? 'btn-accent' : 'card-soft text-soft'
+            }`}
+          >
+            {t('settings.countryNone')}
+          </button>
+          {COUNTRIES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => updateSettings({ country: c.id })}
+              className={`px-3.5 py-2 rounded-2xl text-sm font-bold transition-all flex items-center gap-1.5 ${
+                settings.country === c.id ? 'btn-accent' : 'card-soft text-soft'
+              }`}
+            >
+              <span>{c.flag}</span> {c.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card p-5 flex flex-col gap-3">
+        <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.birthTitle')}</label>
+        <p className="text-xs text-soft -mt-1">{t('settings.birthDesc')}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <input
+            type="date"
+            value={settings.birthDate ?? ''}
+            onChange={(e) => updateSettings({ birthDate: e.target.value || null })}
+            className="px-3 py-2.5 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-semibold"
+          />
+          {settings.birthDate && (
+            <button
+              type="button"
+              onClick={() => updateSettings({ birthDate: null })}
+              className="text-xs font-bold text-soft hover:text-[#e34948] px-2"
+            >
+              {t('common.delete')}
+            </button>
+          )}
+        </div>
+        {zodiac && (
+          <label className="flex items-center gap-2.5 text-xs text-soft">
+            <input
+              type="checkbox"
+              checked={settings.showZodiac}
+              onChange={(e) => updateSettings({ showZodiac: e.target.checked })}
+              className="w-4 h-4 accent-[var(--accent)]"
+            />
+            {t('settings.showZodiac')} — {zodiac.emoji}{' '}
+            {translateWithFallback(`zodiac.${zodiac.id}.name`, lang, zodiac.id)}
+          </label>
+        )}
       </div>
 
       <div className="card p-5 flex flex-col gap-3">
@@ -341,13 +393,15 @@ export default function SettingsView() {
             onChange={(e) => e.target.files?.[0] && importData(e.target.files[0])}
           />
           <button
-            onClick={resetAll}
+            onClick={() => setDeleteModalOpen(true)}
             className="font-bold px-4 py-2 rounded-xl text-sm text-[#e34948] hover:bg-[#e3494811]"
           >
             {t('settings.deleteAll')}
           </button>
         </div>
       </div>
+
+      <DeleteDataModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
     </div>
   );
 }

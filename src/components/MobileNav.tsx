@@ -18,10 +18,15 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
     { id: 'lista', label: t('nav.shopping'), emoji: '🛒' },
     { id: 'invertir', label: t('nav.invest'), emoji: '📈' },
     { id: 'reflexion', label: t('nav.reflection'), emoji: '🧘' },
-    { id: 'ajustes', label: t('nav.settings'), emoji: '⚙️' },
   ];
+  // Ajustes va separado del resto, igual que en el menú de escritorio.
+  const SETTINGS_ITEM: { id: View; label: string; emoji: string } = {
+    id: 'ajustes',
+    label: t('nav.settings'),
+    emoji: '⚙️',
+  };
 
-  const moreActive = MORE_ITEMS.some((i) => i.id === view);
+  const moreActive = MORE_ITEMS.some((i) => i.id === view) || view === SETTINGS_ITEM.id;
 
   return (
     <>
@@ -56,6 +61,18 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
                   {item.label}
                 </button>
               ))}
+              <button
+                onClick={() => {
+                  setView(SETTINGS_ITEM.id);
+                  setMoreOpen(false);
+                }}
+                className={`col-span-2 flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold min-h-[44px] border-t border-theme mt-1 pt-3 ${
+                  SETTINGS_ITEM.id === view ? 'btn-accent' : 'hover:bg-app-soft'
+                }`}
+              >
+                <span className="text-lg">{SETTINGS_ITEM.emoji}</span>
+                {SETTINGS_ITEM.label}
+              </button>
             </motion.div>
           </>
         )}

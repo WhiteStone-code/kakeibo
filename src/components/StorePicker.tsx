@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { PRESET_STORES } from '../data/stores';
+import { PRESET_STORES, storesForCountry } from '../data/stores';
 import { useT } from '../i18n/useT';
 
 /** Selector de "dónde comprarlo": cadenas conocidas (Lidl, Mercadona, Coop,
@@ -15,9 +15,15 @@ export default function StorePicker({
   onChange: (store: string | null) => void;
 }) {
   const customStores = useStore((s) => s.customStores);
+  const country = useStore((s) => s.settings.country);
   const { t } = useT();
   const [customInput, setCustomInput] = useState('');
   const [addingCustom, setAddingCustom] = useState(false);
+
+  // Tus propias tiendas (la del barrio, la que tiene productos portugueses
+  // cerca de casa...) van primero — las conoces mejor que cualquier cadena
+  // genérica. Luego, las cadenas habituales en tu país, si lo has elegido.
+  const orderedPresets = useMemo(() => storesForCountry(country), [country]);
 
   const addCustom = () => {
     const name = customInput.trim();
@@ -40,17 +46,6 @@ export default function StorePicker({
           </button>
         )}
         {!value &&
-          PRESET_STORES.map((s) => (
-            <button
-              type="button"
-              key={s.id}
-              onClick={() => onChange(s.name)}
-              className="card-soft px-3 py-1.5 rounded-full text-xs font-bold hover:text-accent"
-            >
-              {s.emoji} {s.name}
-            </button>
-          ))}
-        {!value &&
           customStores
             .filter((cs) => !PRESET_STORES.some((p) => p.name === cs))
             .map((cs) => (
@@ -63,6 +58,17 @@ export default function StorePicker({
                 📍 {cs}
               </button>
             ))}
+        {!value &&
+          orderedPresets.map((s) => (
+            <button
+              type="button"
+              key={s.id}
+              onClick={() => onChange(s.name)}
+              className="card-soft px-3 py-1.5 rounded-full text-xs font-bold hover:text-accent"
+            >
+              {s.emoji} {s.name}
+            </button>
+          ))}
         {!value && !addingCustom && (
           <button
             type="button"

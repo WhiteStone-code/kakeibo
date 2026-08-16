@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.12.0';
+export const APP_VERSION = '0.13.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,24 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.13.0',
+    date: '15 ago 2026',
+    title: 'Onboarding completo, zodiaco curioso, país y tiendas, precios reales y borrado consciente',
+    items: [
+      'Onboarding ampliado a 7 pasos con indicador de progreso: idioma, nombre, moneda, tema, enfoque, fecha de nacimiento (opcional) y tour — el idioma y la moneda se preguntan ya desde el primer momento',
+      'Nuevo: fecha de nacimiento 100% opcional para un toque curioso — tu signo del zodiaco, visible junto a tu nombre en el menú y apagable en cualquier momento sin borrar la fecha',
+      '"Ajustes" ahora está separado del resto de secciones en el menú, en escritorio y en móvil',
+      'El simulador de inversión llega ya a 50 años de horizonte (antes 30), con las marcas del eje espaciadas automáticamente para que no se amontonen',
+      'Lista de la compra: quitado el precio "a ciegas" al añadir un producto — ahora se pregunta cuánto costó justo al marcarlo como comprado, y la próxima vez se sugiere el precio real de la última compra',
+      'Nuevo: país donde compras en Ajustes — las cadenas de supermercado sugeridas se adaptan (ya no aparece Carrefour destacado si compras en Suiza, por ejemplo), sin ocultar nunca tus tiendas propias',
+      'Nuevo: "Planificar una comida" en la lista de la compra — apunta qué vas a cocinar y sus ingredientes se añaden agrupados por esa comida',
+      'Nuevos botones para compartir la lista por Email y WhatsApp (con su icono) además de la opción de compartir nativa',
+      'Nuevo consejo desplegable de "cuándo suele salir mejor comprar cosas grandes" (coche, vivienda, electrónica) — patrones generales, no garantías',
+      'Nuevo logro "Carro completo" al terminar de marcar toda la lista de la compra',
+      '"Borrar todo" en Ajustes sustituido por un borrado consciente: eliges exactamente qué categorías de datos quitar y escribes una palabra de confirmación — nada se borra por accidente',
+    ],
+  },
   {
     version: '0.12.0',
     date: '15 ago 2026',

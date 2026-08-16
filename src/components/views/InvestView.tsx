@@ -75,12 +75,17 @@ export default function InvestView() {
     return { chartData, finals };
   }, [startNum, monthlyNum, months]);
 
-  // Solo una etiqueta por año en el eje X (evita el amasijo de decimales
-  // de trimestre en trimestre: 0.0, 0.3, 0.6…).
-  const yearTicks = useMemo(
-    () => Array.from({ length: years + 1 }, (_, i) => i * 12),
-    [years]
-  );
+  // Una etiqueta por año en el eje X (evita el amasijo de decimales de
+  // trimestre en trimestre: 0.0, 0.3, 0.6…) — pero a partir de horizontes
+  // largos (>15 años) mostrar cada año amontonaría los números, así que se
+  // espacian de 2 en 2, o de 5 en 5 pasados los 30.
+  const yearStep = years > 30 ? 5 : years > 15 ? 2 : 1;
+  const yearTicks = useMemo(() => {
+    const ticks = [];
+    for (let y = 0; y <= years; y += yearStep) ticks.push(y * 12);
+    if (ticks[ticks.length - 1] !== years * 12) ticks.push(years * 12);
+    return ticks;
+  }, [years, yearStep]);
 
   return (
     <div className="flex flex-col gap-5 pb-24 md:pb-8">
@@ -116,7 +121,7 @@ export default function InvestView() {
             <input
               type="range"
               min={1}
-              max={30}
+              max={50}
               value={years}
               onChange={(e) => setYears(Number(e.target.value))}
               className="w-full mt-3.5 accent-[var(--accent)]"

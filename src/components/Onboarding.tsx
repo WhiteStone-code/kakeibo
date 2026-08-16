@@ -4,13 +4,17 @@ import { useStore } from '../store/useStore';
 import { THEMES } from '../data/themes';
 import { APP_VERSION } from '../data/changelog';
 import { useT } from '../i18n/useT';
-import { translateWithFallback } from '../i18n/translations';
-import type { FinancialFocus, ThemeId } from '../types';
+import { translateWithFallback, LANGUAGES } from '../i18n/translations';
+import { getZodiacSign } from '../data/zodiac';
+import CurrencyPicker from './CurrencyPicker';
+import type { FinancialFocus, LanguageCode, ThemeId } from '../types';
 
 const FOCUS_OPTIONS: FinancialFocus[] = ['ahorro', 'compras_diarias', 'inversion', 'control_deudas', 'metas_grandes'];
+const TOTAL_STEPS = 7;
 
 export default function Onboarding() {
   const updateSettings = useStore((s) => s.updateSettings);
+  const currency = useStore((s) => s.settings.currency);
   const { t, lang } = useT();
   const themeName = (id: string, fallback: string) => translateWithFallback(`theme.${id}.name`, lang, fallback);
   const themeTagline = (id: string, fallback: string) => translateWithFallback(`theme.${id}.tagline`, lang, fallback);
@@ -18,6 +22,8 @@ export default function Onboarding() {
   const [name, setName] = useState('');
   const [theme, setTheme] = useState<ThemeId>('zen');
   const [focus, setFocus] = useState<FinancialFocus[]>([]);
+  const [birthDate, setBirthDate] = useState('');
+  const [showZodiac, setShowZodiac] = useState(true);
   const [periodicGoal, setPeriodicGoal] = useState(false);
 
   const toggleFocus = (f: FinancialFocus) =>
@@ -33,6 +39,8 @@ export default function Onboarding() {
       lastSeenVersion: APP_VERSION,
       periodicGoalEnabled: periodicGoal,
       financialFocus: focus,
+      birthDate: birthDate || null,
+      showZodiac,
     });
   };
 
@@ -46,6 +54,8 @@ export default function Onboarding() {
     { key: 'achievements', emoji: '🏆', nameKey: 'nav.achievements', descKey: 'onboarding.tour.achievements' },
   ];
 
+  const zodiac = birthDate ? getZodiacSign(birthDate) : null;
+
   return (
     <div className="fixed inset-0 z-50 bg-app flex items-center justify-center p-4">
       <motion.div
@@ -53,7 +63,46 @@ export default function Onboarding() {
         animate={{ opacity: 1, scale: 1 }}
         className="card w-full max-w-md p-8 flex flex-col gap-6"
       >
+        {/* Puntos de progreso — 7 pasos es bastante, así se ve que avanza. */}
+        <div className="flex items-center justify-center gap-1.5" aria-hidden>
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all ${
+                i === step ? 'w-5 bg-accent' : 'w-1.5 bg-app-soft'
+              }`}
+            />
+          ))}
+        </div>
+
         {step === 0 && (
+          <>
+            <div className="text-center">
+              <div className="text-6xl mb-3">🌐</div>
+              <h1 className="font-display font-extrabold text-2xl">{t('onboarding.chooseLanguage')}</h1>
+              <p className="text-soft text-sm mt-2">{t('onboarding.chooseLanguageSub')}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => {
+                    updateSettings({ language: l.code as LanguageCode });
+                    setStep(1);
+                  }}
+                  className={`flex items-center gap-2 p-3 rounded-2xl border-2 text-left transition-all ${
+                    lang === l.code ? 'border-accent shadow-md' : 'border-theme'
+                  }`}
+                >
+                  <span className="text-2xl">{l.flag}</span>
+                  <span className="font-display font-bold text-sm">{l.label}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {step === 1 && (
           <>
             <div className="text-center">
               <div className="text-6xl mb-3">⛩️</div>
@@ -66,18 +115,39 @@ export default function Onboarding() {
               onChange={(e) => setName(e.target.value)}
               placeholder={t('onboarding.namePlaceholder')}
               className="px-4 py-3 rounded-2xl bg-surface-2 border border-theme outline-none focus:border-accent font-semibold text-center"
-              onKeyDown={(e) => e.key === 'Enter' && setStep(1)}
+              onKeyDown={(e) => e.key === 'Enter' && setStep(2)}
             />
-            <button
-              onClick={() => setStep(1)}
-              className="btn-accent font-bold py-3 rounded-2xl shadow-md"
-            >
+            <button onClick={() => setStep(2)} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
               {t('onboarding.continue')}
             </button>
           </>
         )}
 
-        {step === 1 && (
+        {step === 2 && (
+          <>
+            <div className="text-center">
+              <div className="text-6xl mb-3">💱</div>
+              <h2 className="font-display font-extrabold text-xl">{t('onboarding.chooseCurrency')}</h2>
+              <p className="text-soft text-sm mt-1">{t('onboarding.chooseCurrencySub')}</p>
+            </div>
+            <div className="max-h-64 overflow-y-auto">
+              <CurrencyPicker value={currency} onChange={(code) => updateSettings({ currency: code })} />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(1)}
+                className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
+              >
+                {t('onboarding.back')}
+              </button>
+              <button onClick={() => setStep(3)} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
+                {t('onboarding.continue')}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 3 && (
           <>
             <div className="text-center">
               <h2 className="font-display font-extrabold text-xl">{t('onboarding.chooseTheme')}</h2>
@@ -112,13 +182,13 @@ export default function Onboarding() {
                 </button>
               ))}
             </div>
-            <button onClick={() => setStep(2)} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
+            <button onClick={() => setStep(4)} className="btn-accent font-bold py-3 rounded-2xl shadow-md">
               {t('onboarding.continue')}
             </button>
           </>
         )}
 
-        {step === 2 && (
+        {step === 4 && (
           <>
             <div className="text-center">
               <h2 className="font-display font-extrabold text-xl">{t('onboarding.focusTitle')}</h2>
@@ -140,19 +210,62 @@ export default function Onboarding() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => setStep(3)}
                 className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
               >
                 {t('onboarding.back')}
               </button>
-              <button onClick={() => setStep(3)} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
+              <button onClick={() => setStep(5)} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
                 {t('onboarding.continue')}
               </button>
             </div>
           </>
         )}
 
-        {step === 3 && (
+        {step === 5 && (
+          <>
+            <div className="text-center">
+              <div className="text-6xl mb-3">{zodiac ? zodiac.emoji : '🎂'}</div>
+              <h2 className="font-display font-extrabold text-xl">{t('onboarding.birthTitle')}</h2>
+              <p className="text-soft text-sm mt-1">{t('onboarding.birthSub')}</p>
+            </div>
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              className="px-4 py-3 rounded-2xl bg-surface-2 border border-theme outline-none focus:border-accent font-semibold text-center"
+            />
+            {zodiac && (
+              <>
+                <p className="text-center text-sm font-bold text-accent">
+                  {t('onboarding.yourSign')}: {zodiac.emoji} {translateWithFallback(`zodiac.${zodiac.id}.name`, lang, zodiac.id)}
+                </p>
+                <label className="flex items-center gap-2.5 justify-center text-xs text-soft">
+                  <input
+                    type="checkbox"
+                    checked={showZodiac}
+                    onChange={(e) => setShowZodiac(e.target.checked)}
+                    className="w-4 h-4 accent-[var(--accent)]"
+                  />
+                  {t('settings.showZodiac')}
+                </label>
+              </>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep(4)}
+                className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
+              >
+                {t('onboarding.back')}
+              </button>
+              <button onClick={() => setStep(6)} className="btn-accent font-bold py-3 rounded-2xl shadow-md flex-1">
+                {birthDate ? t('onboarding.continue') : t('onboarding.birthSkip')}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 6 && (
           <>
             <div className="text-center">
               <h2 className="font-display font-extrabold text-xl">{t('onboarding.tourTitle')}</h2>
@@ -180,7 +293,7 @@ export default function Onboarding() {
             </label>
             <div className="flex gap-2">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(5)}
                 className="card-soft font-bold py-3 px-4 rounded-2xl text-sm text-soft"
               >
                 {t('onboarding.back')}

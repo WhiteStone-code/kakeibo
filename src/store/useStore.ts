@@ -40,7 +40,12 @@ interface StoreState {
    * apuntes "Leche" te lo recuerda aunque ya hayas comprado y borrado esa
    * lista hace semanas. */
   productStoreHistory: Record<string, string>;
+  /** Igual que productStoreHistory pero con el precio real pagado la
+   * última vez — así en vez de pedir que adivines el precio antes de ir a
+   * comprar, se sugiere lo que ya sabes de antes. */
+  productPriceHistory: Record<string, number>;
   shoppingCheckedCount: number;
+  shoppingListsCompleted: number;
   recurringItems: RecurringItem[];
   settings: UserSettings;
   lastCelebratedGoal: string | null;
@@ -71,6 +76,7 @@ interface StoreState {
   }) => void;
   toggleShoppingItem: (id: string) => void;
   getLastStoreFor: (name: string) => string | null;
+  getLastPriceFor: (name: string) => number | null;
   removeShoppingItem: (id: string) => void;
   updateShoppingItem: (
     id: string,
@@ -105,6 +111,9 @@ const defaultSettings: UserSettings = {
   periodicGoalFrequency: 'mensual',
   periodicGoalType: 'ahorro',
   financialFocus: [],
+  birthDate: null,
+  showZodiac: true,
+  country: null,
 };
 
 // Símbolos usados antes de pasar a códigos ISO (v1 → v2) — se migran solos.
@@ -127,7 +136,9 @@ export const useStore = create<StoreState>()(
       customOccasions: [],
       frequentItemNames: [],
       productStoreHistory: {},
+      productPriceHistory: {},
       shoppingCheckedCount: 0,
+      shoppingListsCompleted: 0,
       recurringItems: [],
       settings: defaultSettings,
       lastCelebratedGoal: null,
@@ -287,6 +298,10 @@ export const useStore = create<StoreState>()(
             productStoreHistory: store
               ? { ...state.productStoreHistory, [nameLower]: store }
               : state.productStoreHistory,
+            productPriceHistory:
+              newItem.estPrice !== null
+                ? { ...state.productPriceHistory, [nameLower]: newItem.estPrice }
+                : state.productPriceHistory,
           };
         });
       },
@@ -297,13 +312,28 @@ export const useStore = create<StoreState>()(
         return get().productStoreHistory[name.trim().toLowerCase()] ?? null;
       },
 
+      /** "¿Cuánto costó la última vez?" — en vez de obligar a adivinar un
+       * precio antes de ir a comprar, se sugiere lo que ya se pagó de
+       * verdad la vez anterior por ese mismo producto. */
+      getLastPriceFor: (name) => {
+        return get().productPriceHistory[name.trim().toLowerCase()] ?? null;
+      },
+
       toggleShoppingItem: (id) => {
         set((state) => {
           const item = state.shoppingList.find((i) => i.id === id);
           const nowChecking = item && !item.checked;
+          const newList = state.shoppingList.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i));
+          // Logro "carro completo": se cuenta la primera vez que, al marcar
+          // este producto, ya no queda ningún pendiente en la lista.
+          const stillPending = newList.some((i) => !i.checked);
+          const justCompleted = nowChecking && !stillPending && newList.length > 0;
           return {
-            shoppingList: state.shoppingList.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i)),
+            shoppingList: newList,
             shoppingCheckedCount: nowChecking ? state.shoppingCheckedCount + 1 : state.shoppingCheckedCount,
+            shoppingListsCompleted: justCompleted
+              ? state.shoppingListsCompleted + 1
+              : state.shoppingListsCompleted,
           };
         });
         recomputeAchievements(set, get);
@@ -343,6 +373,13 @@ export const useStore = create<StoreState>()(
             return store && name
               ? { ...state.productStoreHistory, [name]: store }
               : state.productStoreHistory;
+          })(),
+          productPriceHistory: (() => {
+            const item = state.shoppingList.find((i) => i.id === id);
+            const name = (patch.name ?? item?.name)?.trim().toLowerCase();
+            return patch.estPrice != null && name
+              ? { ...state.productPriceHistory, [name]: round2(Math.abs(patch.estPrice)) }
+              : state.productPriceHistory;
           })(),
         }));
       },
@@ -492,6 +529,7 @@ function recomputeAchievements(
     monthsTracked,
     shoppingCheckedCount: state.shoppingCheckedCount,
     distinctStoresUsed,
+    shoppingListsCompleted: state.shoppingListsCompleted,
   });
   const existingIds = new Set(state.unlocked.map((u) => u.id));
   const newlyUnlocked = unlockedIds.filter((id) => !existingIds.has(id));
