@@ -77,3 +77,16 @@ export function projectGrowth(start: number, monthly: number, months: number, an
   }
   return series;
 }
+
+// Objetivo oficial de inflación del BCE a medio plazo (2%) — el ancla más
+// citable y estable que existe para una cifra por defecto; el usuario puede
+// cambiarla, no se le impone como si fuera un hecho universal.
+export const DEFAULT_INFLATION = 0.02;
+
+/** Poder adquisitivo real de un importe futuro, en euros/divisa de hoy —
+ * descuenta la inflación acumulada de los años transcurridos. Misma idea
+ * que ya usa `data/quotes.ts`/el disclaimer: ganar dinero nominal no es lo
+ * mismo que ganar poder de compra. */
+export function realValue(nominalAmount: number, annualInflation: number, years: number): number {
+  return nominalAmount / Math.pow(1 + annualInflation, years);
+}

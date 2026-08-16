@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useStore } from '../../store/useStore';
-import { INVESTMENT_SCENARIOS, RISK_PROFILES, projectGrowth } from '../../data/investmentScenarios';
+import {
+  INVESTMENT_SCENARIOS,
+  RISK_PROFILES,
+  DEFAULT_INFLATION,
+  projectGrowth,
+  realValue,
+} from '../../data/investmentScenarios';
 import { formatMoney } from '../../utils/format';
 import { useT } from '../../i18n/useT';
 import { translateWithFallback } from '../../i18n/translations';
 import CurrencyConverter from '../CurrencyConverter';
+
+const ETF_STEPS = ['1', '2', '3', '4', '5'] as const;
 
 export default function InvestView() {
   const transactions = useStore((s) => s.transactions);
@@ -37,11 +45,14 @@ export default function InvestView() {
   const [start, setStart] = useState(String(suggestedStart || 0));
   const [monthly, setMonthly] = useState(String(suggestedMonthly));
   const [years, setYears] = useState(10);
+  const [inflationPct, setInflationPct] = useState(String(DEFAULT_INFLATION * 100));
+  const [showEtfGuide, setShowEtfGuide] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
   const highlightedScenarioId = RISK_PROFILES.find((p) => p.id === profileId)?.scenarioId ?? null;
 
   const startNum = parseFloat(start.replace(',', '.')) || 0;
   const monthlyNum = parseFloat(monthly.replace(',', '.')) || 0;
+  const inflationNum = (parseFloat(inflationPct.replace(',', '.')) || 0) / 100;
   const months = years * 12;
 
   const { chartData, finals } = useMemo(() => {
@@ -79,7 +90,7 @@ export default function InvestView() {
       </div>
 
       <div className="card p-5 flex flex-col gap-4">
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('invest.initialAmount')}</label>
             <input
@@ -110,6 +121,19 @@ export default function InvestView() {
               onChange={(e) => setYears(Number(e.target.value))}
               className="w-full mt-3.5 accent-[var(--accent)]"
             />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('invest.inflation')}</label>
+            <div className="relative mt-1.5">
+              <input
+                inputMode="decimal"
+                value={inflationPct}
+                onChange={(e) => setInflationPct(e.target.value)}
+                title={t('invest.inflationHint')}
+                className="w-full px-3 py-2.5 pr-8 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-bold"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-soft font-bold text-sm">%</span>
+            </div>
           </div>
         </div>
 
@@ -209,6 +233,11 @@ export default function InvestView() {
                   ? t('invest.yieldNone')
                   : t('invest.yieldAmount', { amount: formatMoney(Math.max(0, final - contributed), currency) })}
               </p>
+              {inflationNum > 0 && (
+                <p className="text-[11px] text-soft mt-1">
+                  {t('invest.realValue', { amount: formatMoney(realValue(final, inflationNum, years), currency) })}
+                </p>
+              )}
               <p className="text-[11px] text-soft mt-1.5 leading-snug">{scenarioDesc(sc.id, sc.description)}</p>
             </div>
           ))}
@@ -231,6 +260,32 @@ export default function InvestView() {
           ))}
         </div>
         <p className="text-xs text-soft italic border-t border-theme pt-3">{t('invest.platforms.disclaimer')}</p>
+      </div>
+
+      <div className="card-soft p-4">
+        <button
+          type="button"
+          onClick={() => setShowEtfGuide((v) => !v)}
+          className="w-full flex items-center justify-between text-sm font-bold text-accent"
+        >
+          <span>{t('invest.etfGuide.toggle')}</span>
+          <span>{showEtfGuide ? '−' : '+'}</span>
+        </button>
+        {showEtfGuide && (
+          <ol className="flex flex-col gap-3 mt-3">
+            {ETF_STEPS.map((n) => (
+              <li key={n} className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full btn-accent flex items-center justify-center text-xs font-bold">
+                  {n}
+                </span>
+                <div>
+                  <p className="text-sm font-bold">{t(`invest.etfGuide.step${n}Title`)}</p>
+                  <p className="text-xs text-soft leading-snug">{t(`invest.etfGuide.step${n}Desc`)}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
       <CurrencyConverter defaultCurrency={currency} />

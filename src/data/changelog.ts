@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.11.1';
+export const APP_VERSION = '0.12.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,15 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.12.0',
+    date: '15 ago 2026',
+    title: 'Inflación en el simulador de inversión y guía de cómo invertir en ETFs',
+    items: [
+      'Nuevo campo de inflación anual estimada (2% por defecto, el objetivo del Banco Central Europeo) en "Planificación financiera" — cada resultado ahora muestra también su poder adquisitivo real, no solo el importe nominal',
+      'Nueva guía desplegable "¿Cómo se invierte de verdad en un ETF?" con 5 pasos educativos y neutrales — sin recomendar ninguna plataforma concreta',
+    ],
+  },
   {
     version: '0.11.1',
     date: '15 ago 2026',
