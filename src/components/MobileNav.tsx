@@ -7,15 +7,19 @@ export default function MobileNav({ view, setView }: { view: View; setView: (v: 
   const { t } = useT();
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // La lista de la compra es una de las acciones diarias más frecuentes
+  // (hallazgo real de auditoría) y antes hacía falta pasar por "Más" para
+  // llegar — se cambia el sitio con Logros, que se mira mucho menos a
+  // menudo, para que la compra esté a un solo toque.
   const PRIMARY_ITEMS: { id: View; label: string; emoji: string }[] = [
     { id: 'dashboard', label: t('nav.dashboard'), emoji: '🏠' },
     { id: 'transacciones', label: t('nav.transactions.short'), emoji: '📒' },
     { id: 'objetivos', label: t('nav.goals.short'), emoji: '🎯' },
-    { id: 'logros', label: t('nav.achievements'), emoji: '🎖️' },
+    { id: 'lista', label: t('nav.shopping.short'), emoji: '🛒' },
   ];
 
   const MORE_ITEMS: { id: View; label: string; emoji: string }[] = [
-    { id: 'lista', label: t('nav.shopping'), emoji: '🛒' },
+    { id: 'logros', label: t('nav.achievements'), emoji: '🎖️' },
     { id: 'invertir', label: t('nav.invest'), emoji: '📈' },
     { id: 'reflexion', label: t('nav.reflection'), emoji: '🧘' },
   ];

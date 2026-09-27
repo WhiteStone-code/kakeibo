@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from './store/useStore';
@@ -6,22 +6,30 @@ import { useApplyTheme } from './hooks/useApplyTheme';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import TopBar from './components/TopBar';
-import TransactionForm from './components/TransactionForm';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/views/Dashboard';
-import TransactionsView from './components/views/TransactionsView';
-import GoalsView from './components/views/GoalsView';
-import AchievementsView from './components/views/AchievementsView';
-import ReflectionView from './components/views/ReflectionView';
-import SettingsView from './components/views/SettingsView';
-import InvestView from './components/views/InvestView';
-import ShoppingListView from './components/views/ShoppingListView';
 import WhatsNewModal from './components/WhatsNewModal';
+import ViewLoadingFallback from './components/ViewLoadingFallback';
 import { ACHIEVEMENTS } from './data/achievements';
 import { APP_VERSION } from './data/changelog';
 import { useT } from './i18n/useT';
 import { translateWithFallback } from './i18n/translations';
 import type { Transaction } from './types';
+
+// Todo lo que no hace falta para el primer pintado (el Panel es la vista
+// por defecto) se separa en su propio trozo de JS y solo se descarga la
+// primera vez que el usuario entra a esa sección — antes los 8 formularios
+// y vistas iban todos en el mismo bundle inicial (>1MB), aunque la mayoría
+// no se usan en la mayoría de sesiones. Hallazgo real de auditoría de
+// rendimiento.
+const TransactionForm = lazy(() => import('./components/TransactionForm'));
+const TransactionsView = lazy(() => import('./components/views/TransactionsView'));
+const GoalsView = lazy(() => import('./components/views/GoalsView'));
+const AchievementsView = lazy(() => import('./components/views/AchievementsView'));
+const ReflectionView = lazy(() => import('./components/views/ReflectionView'));
+const SettingsView = lazy(() => import('./components/views/SettingsView'));
+const InvestView = lazy(() => import('./components/views/InvestView'));
+const ShoppingListView = lazy(() => import('./components/views/ShoppingListView'));
 
 export type View =
   | 'dashboard'
@@ -111,18 +119,26 @@ export default function App() {
         />
         <main className="flex-1 px-4 md:px-8 py-6 max-w-6xl w-full mx-auto">
           {view === 'dashboard' && <Dashboard setView={setView} onAddTransaction={openNewTransaction} />}
-          {view === 'transacciones' && <TransactionsView onEdit={openEditTransaction} />}
-          {view === 'objetivos' && <GoalsView />}
-          {view === 'logros' && <AchievementsView />}
-          {view === 'reflexion' && <ReflectionView />}
-          {view === 'invertir' && <InvestView />}
-          {view === 'lista' && <ShoppingListView />}
-          {view === 'ajustes' && <SettingsView />}
+          {view !== 'dashboard' && (
+            <Suspense fallback={<ViewLoadingFallback />}>
+              {view === 'transacciones' && <TransactionsView onEdit={openEditTransaction} />}
+              {view === 'objetivos' && <GoalsView />}
+              {view === 'logros' && <AchievementsView />}
+              {view === 'reflexion' && <ReflectionView />}
+              {view === 'invertir' && <InvestView />}
+              {view === 'lista' && <ShoppingListView />}
+              {view === 'ajustes' && <SettingsView />}
+            </Suspense>
+          )}
         </main>
       </div>
 
       <MobileNav view={view} setView={setView} />
-      <TransactionForm open={formOpen} onClose={closeTransactionForm} editing={editingTx} />
+      {/* fallback=null: el modal está cerrado (open=false) mientras carga su
+          trozo de JS, así que no hace falta ningún indicador visible aquí. */}
+      <Suspense fallback={null}>
+        <TransactionForm open={formOpen} onClose={closeTransactionForm} editing={editingTx} />
+      </Suspense>
       <WhatsNewModal open={whatsNewOpen} onClose={closeWhatsNew} />
 
       {/* Cola de notificaciones de celebración: en la esquina superior derecha para

@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.14.0';
+export const APP_VERSION = '0.15.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,19 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.15.0',
+    date: '27 sep 2026',
+    title: 'Fuentes reales, app más ágil, la compra a un toque y repetir movimiento',
+    items: [
+      'Arreglado un bug real desde siempre: las tipografías de marca (Baloo 2, Nunito) nunca llegaban a cargar en producción — la app se veía con la fuente del sistema en todas las visitas, sin que se notara a simple vista',
+      'App más ágil: cada sección ahora se descarga solo cuando entras en ella en vez de todas de golpe al abrir la app — unos 270KB menos en la primera carga',
+      'La lista de la compra pasa a ser un botón principal en el móvil (antes hacía falta pasar por "Más") — Logros pasa a "Más" en su lugar',
+      'Nuevo: botón para repetir hoy un movimiento reciente con un solo toque, ideal para gastos que se repiten (café, transporte...)',
+      'Pestañas de Ajustes con navegación completa por teclado (flechas) y mejor accesibilidad',
+      'Aclarado el texto de "Vista Casa" para que quede claro que refleja tus fijos activos ahora mismo',
+    ],
+  },
   {
     version: '0.14.0',
     date: '27 sep 2026',

@@ -133,11 +133,26 @@ export default function SettingsView() {
           real de auditoría. Se agrupan en 4 pestañas de estado local, sin
           añadir routing (la app no usa URLs para las vistas en ningún
           sitio, así que esto sigue el mismo patrón que `View` en App.tsx). */}
-      <div className="flex gap-1 p-1 bg-app-soft rounded-2xl w-fit flex-wrap">
-        {TABS.map((tab) => (
+      <div role="tablist" aria-label={t('settings.title')} className="flex gap-1 p-1 bg-app-soft rounded-2xl w-fit flex-wrap">
+        {TABS.map((tab, i) => (
           <button
             key={tab.id}
+            id={`settings-tab-${tab.id}`}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls={`settings-panel-${tab.id}`}
+            tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
+            onKeyDown={(e) => {
+              // Flechas izquierda/derecha mueven el foco Y la pestaña activa
+              // entre las 4, con vuelta al principio/final — patrón ARIA
+              // tabs estándar, antes solo funcionaba con clic/Tab normal.
+              if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+              e.preventDefault();
+              const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+              setActiveTab(next.id);
+              document.getElementById(`settings-tab-${next.id}`)?.focus();
+            }}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === tab.id ? 'btn-accent' : 'text-soft'
             }`}
@@ -148,7 +163,7 @@ export default function SettingsView() {
       </div>
 
       {activeTab === 'perfil' && (
-      <div className="flex flex-col gap-6">
+      <div id="settings-panel-perfil" role="tabpanel" aria-labelledby="settings-tab-perfil" tabIndex={0} className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.name')}</label>
         <input
@@ -308,7 +323,7 @@ export default function SettingsView() {
       )}
 
       {activeTab === 'dinero' && (
-      <div className="flex flex-col gap-6">
+      <div id="settings-panel-dinero" role="tabpanel" aria-labelledby="settings-tab-dinero" tabIndex={0} className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-soft uppercase tracking-wide">
@@ -397,10 +412,14 @@ export default function SettingsView() {
       </div>
       )}
 
-      {activeTab === 'categorias' && <CategoryManager />}
+      {activeTab === 'categorias' && (
+        <div id="settings-panel-categorias" role="tabpanel" aria-labelledby="settings-tab-categorias" tabIndex={0}>
+          <CategoryManager />
+        </div>
+      )}
 
       {activeTab === 'datos' && (
-      <div className="flex flex-col gap-6">
+      <div id="settings-panel-datos" role="tabpanel" aria-labelledby="settings-tab-datos" tabIndex={0} className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.dataTitle')}</label>
         <p className="text-xs text-soft -mt-1">{t('settings.dataDesc')}</p>

@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { currentMonthKey, formatMoney, formatDate, monthLabel } from '../../utils/format';
+import { localIsoDate } from '../../utils/localDate';
 import StatTile from '../StatTile';
 import CategoryDonut from '../charts/CategoryDonut';
 import TrendChart from '../charts/TrendChart';
@@ -29,10 +30,16 @@ export default function Dashboard({
   const transactions = useStore((s) => s.transactions);
   const goals = useStore((s) => s.goals);
   const currency = useStore((s) => s.settings.currency);
+  const addTransaction = useStore((s) => s.addTransaction);
   const allCategories = useAllCategories();
   const categoryLabel = useCategoryLabel();
   const { t } = useT();
   const month = currentMonthKey();
+  // Confirmación breve al repetir un movimiento — sin abrir ningún modal,
+  // para que un gasto que se repite mucho (café, transporte...) se pueda
+  // apuntar de nuevo en un solo toque. Hallazgo real de auditoría: registrar
+  // un movimiento cuesta 3-4 toques hoy; esto lo deja en 1 para lo repetido.
+  const [justRepeatedId, setJustRepeatedId] = useState<string | null>(null);
 
   const { ingresos, gastos, balance, recent } = useMemo(() => {
     let ingresos = 0;
@@ -143,8 +150,9 @@ export default function Dashboard({
           <ul className="flex flex-col divide-y divide-theme">
             {recent.map((tx) => {
               const cat = getCategory(tx.category, allCategories);
+              const justRepeated = justRepeatedId === tx.id;
               return (
-                <li key={tx.id} className="flex items-center gap-3 py-2.5">
+                <li key={tx.id} className="flex items-center gap-3 py-2.5 group">
                   <span className="text-xl">{cat.emoji}</span>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm truncate">
@@ -160,6 +168,32 @@ export default function Dashboard({
                     {tx.type === 'ingreso' ? '+' : '-'}
                     {formatMoney(tx.amount, currency)}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addTransaction({
+                        type: tx.type,
+                        amount: tx.amount,
+                        category: tx.category,
+                        note: tx.note,
+                        place: tx.place ?? null,
+                        paymentMethod: tx.paymentMethod,
+                        date: localIsoDate(),
+                      });
+                      setJustRepeatedId(tx.id);
+                      setTimeout(() => setJustRepeatedId(null), 1600);
+                    }}
+                    aria-label={t('dashboard.repeatTransaction')}
+                    title={t('dashboard.repeatTransaction')}
+                    disabled={justRepeated}
+                    className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-sm transition-all ${
+                      justRepeated
+                        ? 'text-accent'
+                        : 'text-soft opacity-60 hover:opacity-100 hover:bg-app-soft md:opacity-0 md:group-hover:opacity-100'
+                    }`}
+                  >
+                    {justRepeated ? '✓' : '🔁'}
+                  </button>
                 </li>
               );
             })}

@@ -67,6 +67,7 @@ const DICT: Record<string, Row> = {
   'nav.more': { es: 'Más', en: 'More', pt: 'Mais', it: 'Altro', fr: 'Plus', de: 'Mehr' },
   'nav.transactions.short': { es: 'Movs', en: 'Txns', pt: 'Movs', it: 'Mov.', fr: 'Mvts', de: 'Buch.' },
   'nav.goals.short': { es: 'Metas', en: 'Goals', pt: 'Metas', it: 'Obiett.', fr: 'Objectifs', de: 'Ziele' },
+  'nav.shopping.short': { es: 'Compra', en: 'Shop', pt: 'Compras', it: 'Spesa', fr: 'Courses', de: 'Einkauf' },
   'sidebar.greeting': { es: 'Hola, {name}', en: 'Hi, {name}', pt: 'Olá, {name}', it: 'Ciao, {name}', fr: 'Salut, {name}', de: 'Hallo, {name}' },
   'sidebar.didYouKnowTitle': { es: '💡 ¿Sabías qué?', en: '💡 Did you know?', pt: '💡 Sabias que?', it: '💡 Lo sapevi?', fr: '💡 Le saviez-vous ?', de: '💡 Wusstest du schon?' },
   'sidebar.didYouKnowText': {
@@ -160,7 +161,7 @@ const DICT: Record<string, Row> = {
 
   // ---------- Panel ----------
   'household.title': { es: '🏠 Vista Casa', en: '🏠 Household view', pt: '🏠 Vista Casa', it: '🏠 Vista Casa', fr: '🏠 Vue Maison', de: '🏠 Haushaltsansicht' },
-  'household.subtitle': { es: 'Lo que cuesta mantener la casa cada mes, separado de lo que decides gastar cada día — según tus gastos e ingresos fijos.', en: 'What it costs to keep the household running each month, separate from your day-to-day spending decisions — based on your fixed expenses and income.', pt: 'O que custa manter a casa cada mês, separado do que decides gastar no dia a dia — segundo as tuas despesas e receitas fixas.', it: 'Quanto costa mantenere la casa ogni mese, separato da ciò che decidi di spendere ogni giorno — in base alle tue spese ed entrate fisse.', fr: 'Ce que coûte l’entretien du foyer chaque mois, séparé de tes dépenses quotidiennes — basé sur tes dépenses et revenus fixes.', de: 'Was der Haushalt jeden Monat kostet, getrennt von deinen täglichen Ausgabenentscheidungen — basierend auf deinen festen Ausgaben und Einnahmen.' },
+  'household.subtitle': { es: 'Tus gastos e ingresos fijos activos ahora mismo, separados de lo que decides gastar cada día — si desactivas uno, deja de contar desde ese momento.', en: 'Your currently active fixed expenses and income, separate from your day-to-day spending decisions — if you deactivate one, it stops counting from that point on.', pt: 'As tuas despesas e receitas fixas ativas neste momento, separadas do que decides gastar no dia a dia — se desativares uma, deixa de contar a partir daí.', it: 'Le tue spese ed entrate fisse attualmente attive, separate da ciò che decidi di spendere ogni giorno — se ne disattivi una, smette di contare da quel momento.', fr: 'Tes dépenses et revenus fixes actuellement actifs, séparés de tes dépenses quotidiennes — si tu en désactives un, il cesse d’être compté à partir de là.', de: 'Deine aktuell aktiven Fixkosten und -einnahmen, getrennt von deinen täglichen Ausgabenentscheidungen — deaktivierst du einen Posten, zählt er ab dann nicht mehr mit.' },
   'household.fixedExpenses': { es: 'Gastos fijos/mes', en: 'Fixed costs/month', pt: 'Despesas fixas/mês', it: 'Spese fisse/mese', fr: 'Charges fixes/mois', de: 'Fixkosten/Monat' },
   'household.fixedIncome': { es: 'Ingresos fijos/mes', en: 'Fixed income/month', pt: 'Receitas fixas/mês', it: 'Entrate fisse/mese', fr: 'Revenus fixes/mois', de: 'Feste Einnahmen/Monat' },
   'weeklyChallenge.title': { es: '🎯 Reto de la semana', en: '🎯 This week’s challenge', pt: '🎯 Desafio da semana', it: '🎯 Sfida della settimana', fr: '🎯 Défi de la semaine', de: '🎯 Herausforderung der Woche' },
@@ -191,6 +192,7 @@ const DICT: Record<string, Row> = {
   'dashboard.trend': { es: '📊 Tendencia (6 meses)', en: '📊 Trend (6 months)', pt: '📊 Tendência (6 meses)', it: '📊 Andamento (6 mesi)', fr: '📊 Tendance (6 mois)', de: '📊 Verlauf (6 Monate)' },
   'dashboard.recentTransactions': { es: '🕘 Movimientos recientes', en: '🕘 Recent transactions', pt: '🕘 Movimentos recentes', it: '🕘 Movimenti recenti', fr: '🕘 Mouvements récents', de: '🕘 Letzte Buchungen' },
   'dashboard.viewAll': { es: 'Ver todos →', en: 'View all →', pt: 'Ver todos →', it: 'Vedi tutti →', fr: 'Voir tout →', de: 'Alle ansehen →' },
+  'dashboard.repeatTransaction': { es: 'Repetir este movimiento hoy', en: 'Repeat this transaction today', pt: 'Repetir este movimento hoje', it: 'Ripeti questo movimento oggi', fr: 'Répéter ce mouvement aujourd’hui', de: 'Diese Buchung heute wiederholen' },
   'dashboard.noTransactionsYet': { es: 'Aún no hay movimientos. ¡Pulsa "Añadir movimiento" para empezar! 🌱', en: 'No transactions yet. Tap "Add transaction" to start! 🌱', pt: 'Ainda não há movimentos. Toca em "Adicionar movimento" para começar! 🌱', it: 'Ancora nessun movimento. Tocca "Aggiungi movimento" per iniziare! 🌱', fr: 'Pas encore de mouvements. Appuie sur «Ajouter un mouvement» pour commencer ! 🌱', de: 'Noch keine Buchungen. Tippe auf „Buchung hinzufügen“, um loszulegen! 🌱' },
 
   // ---------- Hoy puedes gastar ----------
