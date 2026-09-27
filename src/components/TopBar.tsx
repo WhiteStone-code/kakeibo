@@ -21,9 +21,16 @@ export default function TopBar({
     : 100;
 
   return (
-    <header className="flex items-center justify-between gap-3 px-4 md:px-8 py-4 border-b border-theme bg-surface/70 backdrop-blur sticky top-0 z-30">
+    // Ojo con los breakpoints aquí: la barra lateral ocupa 256px fijos a
+    // partir de md (768px), justo donde antes empezaban a aparecer estos
+    // mismos elementos con `sm:` (640px) — resultado real medido por
+    // auditoría: hasta 90px de solape entre controles en el rango
+    // 768-950px, en los 6 idiomas. Los elementos "extra" (no imprescindibles
+    // para usar la barra) se retrasan a `lg:` (1024px), que es cuando de
+    // verdad sobra sitio una vez descontada la barra lateral.
+    <header className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 lg:px-8 py-4 border-b border-theme bg-surface/70 backdrop-blur sticky top-0 z-30">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="hidden sm:flex flex-col leading-tight">
+        <div className="hidden lg:flex flex-col leading-tight">
           <span className="font-display font-bold text-sm flex items-center gap-1.5">
             <span>{level.emoji}</span> {levelTitle}
           </span>
@@ -37,9 +44,9 @@ export default function TopBar({
         <div className="flex items-center gap-1.5 card-soft px-3 py-1.5 rounded-full text-sm font-bold">
           <span>🔥</span>
           <span>{streak}</span>
-          <span className="text-soft font-medium hidden sm:inline">{t('topbar.days')}</span>
+          <span className="text-soft font-medium hidden lg:inline">{t('topbar.days')}</span>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 card-soft px-3 py-1.5 rounded-full text-sm font-bold">
+        <div className="hidden lg:flex items-center gap-1.5 card-soft px-3 py-1.5 rounded-full text-sm font-bold">
           <span>🎖️</span>
           <span>{unlockedCount}</span>
         </div>

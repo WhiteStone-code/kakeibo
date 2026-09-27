@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { useT } from '../i18n/useT';
 import { formatMoney } from '../utils/format';
+import { localMonthKey } from '../utils/localDate';
 
 /** Recordatorio de gastos/ingresos fijos que ya tocan este mes y aún no se
  * han confirmado — un toque para registrarlos, otro para saltarlos este mes
@@ -16,7 +17,7 @@ export default function RecurringDueCard() {
   const { due, upcoming } = useMemo(() => {
     const today = new Date();
     const day = today.getDate();
-    const monthKey = today.toISOString().slice(0, 7);
+    const monthKey = localMonthKey(today);
     const notAppliedYet = recurringItems.filter((r) => r.active && r.lastAppliedMonth !== monthKey);
     return {
       due: notAppliedYet.filter((r) => r.dayOfMonth <= day),

@@ -3,6 +3,7 @@ import Modal from './Modal';
 import EmojiPicker from './EmojiPicker';
 import { useStore } from '../store/useStore';
 import { useT } from '../i18n/useT';
+import { parseDecimal } from '../utils/format';
 
 // Los más habituales para un objetivo de ahorro, a mano sin tener que buscar.
 const QUICK_EMOJIS = ['🚗', '💍', '✈️', '🏡', '🎓', '💻', '🐶', '🏝️', '🎸', '👶', '🎁', '🎉'];
@@ -28,7 +29,7 @@ export default function GoalForm({ open, onClose }: { open: boolean; onClose: ()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const targetAmount = parseFloat(target.replace(',', '.'));
+    const targetAmount = parseDecimal(target);
     const nameError = !name.trim();
     const targetError = !targetAmount || targetAmount <= 0;
     if (nameError || targetError) {

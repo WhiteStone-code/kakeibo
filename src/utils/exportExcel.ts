@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import type { Category, Goal, Transaction } from '../types';
 import { getCategory } from '../data/categories';
 import { currentMonthKey, monthLabel } from './format';
+import { localIsoDate } from './localDate';
 
 interface ExportableState {
   transactions: Transaction[];
@@ -166,7 +167,7 @@ export async function exportToExcel(state: ExportableState, allCategories: Categ
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `kakeibo-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  a.download = `kakeibo-${localIsoDate()}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -180,7 +181,7 @@ export async function exportToExcel(state: ExportableState, allCategories: Categ
 export async function shareExcelReport(state: ExportableState, allCategories: Category[]) {
   const wb = await buildWorkbook(state, allCategories);
   const buffer = await wb.xlsx.writeBuffer();
-  const fileName = `kakeibo-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const fileName = `kakeibo-${localIsoDate()}.xlsx`;
   const file = new File([buffer], fileName, {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });

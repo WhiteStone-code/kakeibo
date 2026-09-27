@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { currentMonthKey, formatMoney, monthLabel } from '../../utils/format';
+import { currentMonthKey, formatMoney, monthLabel, parseDecimal } from '../../utils/format';
 import { useT } from '../../i18n/useT';
 import KakeiboSplit from '../KakeiboSplit';
 
@@ -28,8 +28,8 @@ export default function ReflectionView() {
   const [saved, setSaved] = useState(false);
   const [showWhy, setShowWhy] = useState(!existing);
 
-  const disponibleNum = parseFloat(disponible.replace(',', '.')) || 0;
-  const deseoAhorrarNum = parseFloat(deseoAhorrar.replace(',', '.')) || 0;
+  const disponibleNum = parseDecimal(disponible) || 0;
+  const deseoAhorrarNum = parseDecimal(deseoAhorrar) || 0;
   const ahorroReal = disponibleNum - gastoReal;
   const diferencia = ahorroReal - deseoAhorrarNum;
   const hasEnoughData = disponibleNum > 0 || deseoAhorrarNum > 0;

@@ -92,6 +92,7 @@ export default function CategoryManager() {
               )}
               <button
                 onClick={() => handleDelete(cat.id, cat.label)}
+                aria-label={t('category.deleteTitle')}
                 className="text-soft hover:text-[#e34948] text-sm px-1 shrink-0"
                 title={t('category.deleteTitle')}
               >

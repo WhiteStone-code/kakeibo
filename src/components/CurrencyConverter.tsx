@@ -3,6 +3,7 @@ import { UNIQUE_CURRENCIES } from '../data/currencies';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useT } from '../i18n/useT';
 import { LOCALE_MAP } from '../i18n/translations';
+import { parseDecimal } from '../utils/format';
 
 /** Conversor rápido de divisas. Es la única función de la app que necesita
  * internet (tasas del BCE vía frankfurter.dev, gratis y sin clave) — el
@@ -16,7 +17,7 @@ export default function CurrencyConverter({ defaultCurrency }: { defaultCurrency
   const { t, lang } = useT();
   const locale = LOCALE_MAP[lang];
 
-  const amountNum = parseFloat(amount.replace(',', '.')) || 0;
+  const amountNum = parseDecimal(amount) || 0;
   const converted = rate !== null ? amountNum * rate : null;
 
   return (

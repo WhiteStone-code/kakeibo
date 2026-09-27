@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.13.0';
+export const APP_VERSION = '0.14.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,22 @@ export interface ChangelogEntry {
 // WhatsNewModal se abre solo cuando settings.lastSeenVersion !== APP_VERSION,
 // así siempre ves qué ha cambiado sin tener que preguntar.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.14.0',
+    date: '27 sep 2026',
+    title: 'Auditoría a fondo: fechas, contraste, Ajustes reorganizado y dos herramientas nuevas',
+    items: [
+      'Arreglado un bug real de fechas: justo pasada la medianoche podía registrarse un movimiento con la fecha de ayer, o un gasto fijo mostrarse como pendiente dos veces — ahora todo usa la fecha del calendario local, no la de UTC',
+      'Arreglado: en tablet (768-950px) varios controles de la barra superior se solapaban entre sí en los 6 idiomas',
+      'Mejorado el contraste de los botones principales y del texto secundario en los 5 temas claros, para cumplir el estándar de accesibilidad WCAG AA',
+      'Arreglado: el desglose de las 4 categorías Kakeibo podía sumar 102% en vez de 100% por un redondeo independiente de cada porcentaje',
+      'Arreglado: al confirmar el precio de un producto de la compra sin escribir nada, se perdía el precio sugerido en silencio — ahora aparece ya escrito, no solo como ejemplo',
+      'Mejorada la accesibilidad de las ventanas emergentes (incluida la de borrar datos): ahora anuncian que se han abierto y mueven el foco del teclado dentro',
+      '"Ajustes" reorganizado en 4 pestañas (Perfil, Dinero fijo, Categorías, Tus datos) — antes eran 11 tarjetas seguidas en un único scroll interminable',
+      'Nuevo "Reto de la semana" en el Panel: cada semana propone gastar algo menos en una categoría real, calculado sobre tu propia media — nunca un número inventado',
+      'Nueva "Vista Casa" en el Panel: cuánto cuesta mantener la casa cada mes (a partir de tus gastos e ingresos fijos), separado de lo que gastas cada día',
+    ],
+  },
   {
     version: '0.13.0',
     date: '15 ago 2026',

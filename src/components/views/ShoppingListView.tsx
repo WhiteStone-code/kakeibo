@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { useT } from '../../i18n/useT';
-import { formatMoney, daysUntil } from '../../utils/format';
+import { formatMoney, daysUntil, parseDecimal } from '../../utils/format';
+import { localIsoDate } from '../../utils/localDate';
 import { buildShoppingListText, openEmailShare } from '../../utils/shareShoppingList';
 import StorePicker from '../StorePicker';
 import DealDatesCard from '../DealDatesCard';
@@ -141,14 +142,19 @@ export default function ShoppingListView() {
     toggleShoppingItem(item.id);
     if (!wasChecked && item.estPrice === null) {
       setPriceProbeId(item.id);
-      setPriceProbeValue('');
+      // Precio real de la última vez, si existe, como VALOR editable — no
+      // solo como placeholder. Hallazgo real de auditoría: con solo el
+      // placeholder, confirmar sin escribir nada (una lectura razonable de
+      // "sí, el mismo de siempre") descartaba el precio en silencio.
+      const last = getLastPriceFor(item.name);
+      setPriceProbeValue(last !== null ? String(last).replace('.', ',') : '');
     } else if (priceProbeId === item.id) {
       setPriceProbeId(null);
     }
   };
 
   const submitPriceProbe = (id: string) => {
-    const p = parseFloat(priceProbeValue.replace(',', '.'));
+    const p = parseDecimal(priceProbeValue);
     if (Number.isFinite(p) && p > 0) updateShoppingItem(id, { estPrice: p });
     setPriceProbeId(null);
     setPriceProbeValue('');
@@ -184,7 +190,7 @@ export default function ShoppingListView() {
       amount: totalSpent,
       category: 'comida',
       note: t('shopping.registerNote', { names }).slice(0, 120),
-      date: new Date().toISOString().slice(0, 10),
+      date: localIsoDate(),
     });
     clearCheckedShoppingItems();
   };
@@ -234,9 +240,7 @@ export default function ShoppingListView() {
             value={priceProbeValue}
             onChange={(e) => setPriceProbeValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), submitPriceProbe(item.id))}
-            placeholder={
-              getLastPriceFor(item.name) !== null ? formatMoney(getLastPriceFor(item.name)!, currency) : currency
-            }
+            placeholder={currency}
             className="w-20 px-2 py-1 rounded-lg bg-surface-2 border border-theme outline-none focus:border-accent text-xs font-bold"
           />
           <button
@@ -352,7 +356,7 @@ export default function ShoppingListView() {
         <input
           inputMode="decimal"
           defaultValue={shoppingBudget || ''}
-          onBlur={(e) => setShoppingBudget(parseFloat(e.target.value.replace(',', '.')) || 0)}
+          onBlur={(e) => setShoppingBudget(parseDecimal(e.target.value) || 0)}
           placeholder={t('shopping.budgetPlaceholder')}
           className="w-32 px-3 py-2 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-bold"
         />

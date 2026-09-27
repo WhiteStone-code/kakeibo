@@ -12,9 +12,19 @@ import RecurringManager from '../RecurringManager';
 import CurrencyPicker from '../CurrencyPicker';
 import LiveRateTicker from '../LiveRateTicker';
 import DeleteDataModal from '../DeleteDataModal';
+import { localIsoDate } from '../../utils/localDate';
+import { parseDecimal } from '../../utils/format';
 import type { FinancialFocus, ThemeId } from '../../types';
 
 const FOCUS_OPTIONS: FinancialFocus[] = ['ahorro', 'compras_diarias', 'inversion', 'control_deudas', 'metas_grandes'];
+
+type SettingsTab = 'perfil' | 'dinero' | 'categorias' | 'datos';
+const TABS: { id: SettingsTab; key: string }[] = [
+  { id: 'perfil', key: 'settings.tab.perfil' },
+  { id: 'dinero', key: 'settings.tab.dineroFijo' },
+  { id: 'categorias', key: 'settings.tab.categorias' },
+  { id: 'datos', key: 'settings.tab.datos' },
+];
 
 export default function SettingsView() {
   const settings = useStore((s) => s.settings);
@@ -30,6 +40,7 @@ export default function SettingsView() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<SettingsTab>('perfil');
   const zodiac = settings.birthDate ? getZodiacSign(settings.birthDate) : null;
 
   const exportData = () => {
@@ -57,7 +68,7 @@ export default function SettingsView() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `kakeibo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `kakeibo-backup-${localIsoDate()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -117,6 +128,27 @@ export default function SettingsView() {
         <p className="text-xs text-soft italic border-t border-theme pt-2 mt-1">{t('settings.privacyNote')}</p>
       </div>
 
+      {/* Antes eran ~11 tarjetas seguidas en un único scroll (hasta 6-7
+          pantallas para llegar a "borrar mis datos" en tablet) — hallazgo
+          real de auditoría. Se agrupan en 4 pestañas de estado local, sin
+          añadir routing (la app no usa URLs para las vistas en ningún
+          sitio, así que esto sigue el mismo patrón que `View` en App.tsx). */}
+      <div className="flex gap-1 p-1 bg-app-soft rounded-2xl w-fit flex-wrap">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === tab.id ? 'btn-accent' : 'text-soft'
+            }`}
+          >
+            {t(tab.key)}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'perfil' && (
+      <div className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.name')}</label>
         <input
@@ -272,7 +304,11 @@ export default function SettingsView() {
           })}
         </div>
       </div>
+      </div>
+      )}
 
+      {activeTab === 'dinero' && (
+      <div className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-soft uppercase tracking-wide">
@@ -280,6 +316,9 @@ export default function SettingsView() {
           </label>
           <button
             onClick={() => updateSettings({ periodicGoalEnabled: !settings.periodicGoalEnabled })}
+            role="switch"
+            aria-checked={settings.periodicGoalEnabled}
+            aria-label={t('settings.periodicGoal')}
             className={`w-11 h-6 rounded-full transition-colors relative ${
               settings.periodicGoalEnabled ? 'bg-accent' : 'bg-app-soft'
             }`}
@@ -311,7 +350,7 @@ export default function SettingsView() {
                 inputMode="decimal"
                 defaultValue={settings.periodicGoalAmount || ''}
                 onBlur={(e) =>
-                  updateSettings({ periodicGoalAmount: parseFloat(e.target.value.replace(',', '.')) || 0 })
+                  updateSettings({ periodicGoalAmount: parseDecimal(e.target.value) || 0 })
                 }
                 placeholder="0.00"
                 className="w-32 px-3 py-2 rounded-xl bg-surface-2 border border-theme outline-none focus:border-accent font-bold"
@@ -336,8 +375,6 @@ export default function SettingsView() {
 
       <RecurringManager />
 
-      <CategoryManager />
-
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.budgetsTitle')}</label>
         <p className="text-xs text-soft -mt-1">{t('settings.budgetsDesc')}</p>
@@ -349,7 +386,7 @@ export default function SettingsView() {
               <input
                 inputMode="decimal"
                 defaultValue={budgets[cat.id] ?? ''}
-                onBlur={(e) => setBudget(cat.id, parseFloat(e.target.value.replace(',', '.')) || 0)}
+                onBlur={(e) => setBudget(cat.id, parseDecimal(e.target.value) || 0)}
                 placeholder={t('common.unlimited')}
                 className="w-24 px-2 py-1.5 rounded-lg bg-surface border border-theme outline-none focus:border-accent text-sm text-right font-bold"
               />
@@ -357,7 +394,13 @@ export default function SettingsView() {
           ))}
         </div>
       </div>
+      </div>
+      )}
 
+      {activeTab === 'categorias' && <CategoryManager />}
+
+      {activeTab === 'datos' && (
+      <div className="flex flex-col gap-6">
       <div className="card p-5 flex flex-col gap-3">
         <label className="text-xs font-bold text-soft uppercase tracking-wide">{t('settings.dataTitle')}</label>
         <p className="text-xs text-soft -mt-1">{t('settings.dataDesc')}</p>
@@ -400,6 +443,8 @@ export default function SettingsView() {
           </button>
         </div>
       </div>
+      </div>
+      )}
 
       <DeleteDataModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
     </div>

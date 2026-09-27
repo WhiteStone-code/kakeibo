@@ -22,7 +22,12 @@
   --border: #E4DCCB;
   --text: #2B241C;
   --text-soft: #6B6152;
-  --accent: #7C9473;
+  /* Oscurecido de #7C9473 a #667B5E (misma tonalidad, +HSL lightness
+   * bajado) — el original daba 3.31:1 de contraste con el blanco de
+   * --accent-contrast en los botones .btn-accent, por debajo del 4.5:1
+   * que exige WCAG AA para texto normal. Hallazgo real de auditoría,
+   * verificado con la fórmula de luminancia relativa. */
+  --accent: #667B5E;
   --accent-2: #E8927C;
   --accent-3: #2B3A55;
   --accent-contrast: #FFFFFF;
@@ -49,8 +54,11 @@ html[data-theme="sakura"] {
   --surface-2: #FFF0F6;
   --border: #FAD2E6;
   --text: #3A2233;
-  --text-soft: #8A6B80;
-  --accent: #F582AE;
+  /* #8A6B80 daba 4.38:1 sobre --bg, por debajo de 4.5:1 AA para texto
+   * pequeño/secundario (text-xs/sm, sin la exención de "texto grande"). */
+  --text-soft: #84677B;
+  /* #F582AE daba solo 2.42:1 con blanco — el peor de los 5 temas. */
+  --accent: #E31262;
   --accent-2: #8093F1;
   --accent-3: #F3A8D9;
   --accent-contrast: #FFFFFF;
@@ -78,7 +86,8 @@ html[data-theme="neon"] {
   --border: #DAD1FF;
   --text: #1A1530;
   --text-soft: #6C6390;
-  --accent: #B347FF;
+  /* #B347FF daba 3.99:1 con blanco — cerca pero por debajo de 4.5:1 AA. */
+  --accent: #A82DFF;
   --accent-2: #00C2D1;
   --accent-3: #FF2E9A;
   --accent-contrast: #FFFFFF;
@@ -105,8 +114,10 @@ html[data-theme="oceano"] {
   --surface-2: #E7F6F9;
   --border: #C7E9F0;
   --text: #0B2E3B;
-  --text-soft: #4E7C8C;
-  --accent: #0EA5C4;
+  /* #4E7C8C daba 4.31:1 sobre --bg — por debajo de 4.5:1 AA. */
+  --text-soft: #4A7685;
+  /* #0EA5C4 daba solo 2.92:1 con blanco. */
+  --accent: #0B7F97;
   --accent-2: #0B4F8A;
   --accent-3: #4FD6C6;
   --accent-contrast: #FFFFFF;
@@ -134,7 +145,8 @@ html[data-theme="bosque"] {
   --border: #DDD5B8;
   --text: #2B2618;
   --text-soft: #6E664C;
-  --accent: #5B8C5A;
+  /* #5B8C5A daba 3.93:1 con blanco — por debajo de 4.5:1 AA. */
+  --accent: #527E51;
   --accent-2: #8C5B3F;
   --accent-3: #D9C27E;
   --accent-contrast: #FFFFFF;

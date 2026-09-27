@@ -5,7 +5,8 @@ import { useExpenseCategories, useIncomeCategories } from '../hooks/useCategorie
 import { useCategoryLabel } from '../i18n/useCategoryLabel';
 import { useT } from '../i18n/useT';
 import { useStore } from '../store/useStore';
-import { currencySymbol, formatMoneyRound } from '../utils/format';
+import { currencySymbol, formatMoneyRound, parseDecimal } from '../utils/format';
+import { localIsoDate } from '../utils/localDate';
 import type { PaymentMethod, Transaction, TransactionType } from '../types';
 
 const PAYMENT_METHODS: { id: PaymentMethod; key: string; emoji: string }[] = [
@@ -40,7 +41,7 @@ export default function TransactionForm({
   const [note, setNote] = useState('');
   const [place, setPlace] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('tarjeta');
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => localIsoDate());
   const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState(false);
 
@@ -53,7 +54,7 @@ export default function TransactionForm({
     setNote('');
     setPlace('');
     setPaymentMethod('tarjeta');
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(localIsoDate());
     setShowDetails(false);
     setError(false);
   };
@@ -88,7 +89,7 @@ export default function TransactionForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const value = parseFloat(amount.replace(',', '.'));
+    const value = parseDecimal(amount);
     if (!value || value <= 0) {
       setError(true);
       return;

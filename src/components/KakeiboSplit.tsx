@@ -37,7 +37,32 @@ export default function KakeiboSplit({ monthKey, mode = 'dashboard' }: { monthKe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions, month, allCategories]);
 
-  const pct = (id: string) => (total > 0 ? Math.round((byGroup[id] / total) * 100) : 0);
+  // Redondeo por "mayor resto": si cada grupo se redondea por separado
+  // (Math.round de cada % suelto), los 4 números pueden sumar 102% o 98%
+  // en vez de 100% — hallazgo real de auditoría (ej. reparto 1/1/3/3 de 8
+  // da 13+13+38+38=102). Aquí se reparten los puntos exactos y solo el
+  // resto sobrante (100 - suma de los redondeos hacia abajo) se asigna a
+  // los grupos con mayor parte decimal, así los 4 números siempre suman
+  // exactamente 100.
+  const pcts = useMemo(() => {
+    const result: Record<string, number> = {};
+    if (total <= 0) {
+      for (const id of EXPENSE_KAKEIBO_GROUP_IDS) result[id] = 0;
+      return result;
+    }
+    const exact = EXPENSE_KAKEIBO_GROUP_IDS.map((id) => ({ id, value: (byGroup[id] / total) * 100 }));
+    const floors = exact.map((e) => ({ id: e.id, floor: Math.floor(e.value), remainder: e.value - Math.floor(e.value) }));
+    let assigned = floors.reduce((sum, f) => sum + f.floor, 0);
+    let leftover = 100 - assigned;
+    const byRemainder = [...floors].sort((a, b) => b.remainder - a.remainder);
+    for (const id of EXPENSE_KAKEIBO_GROUP_IDS) result[id] = floors.find((f) => f.id === id)!.floor;
+    for (let i = 0; i < byRemainder.length && leftover > 0; i++, leftover--) {
+      result[byRemainder[i].id] += 1;
+    }
+    return result;
+  }, [byGroup, total]);
+
+  const pct = (id: string) => pcts[id] ?? 0;
 
   if (mode === 'inline') {
     if (total <= 0) return null;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Goal } from '../types';
 import { useStore } from '../store/useStore';
 import { useT } from '../i18n/useT';
-import { formatMoney, formatMoneyRound, daysUntil } from '../utils/format';
+import { formatMoney, formatMoneyRound, daysUntil, parseDecimal } from '../utils/format';
 
 export default function GoalCard({ goal }: { goal: Goal }) {
   const contributeToGoal = useStore((s) => s.contributeToGoal);
@@ -17,7 +17,7 @@ export default function GoalCard({ goal }: { goal: Goal }) {
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const v = parseFloat(addAmount.replace(',', '.'));
+    const v = parseDecimal(addAmount);
     if (!v) return;
     contributeToGoal(goal.id, v);
     setAddAmount('');

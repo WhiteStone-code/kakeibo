@@ -11,6 +11,8 @@ import PeriodicGoalCard from '../PeriodicGoalCard';
 import RecurringDueCard from '../RecurringDueCard';
 import ReflectionCard from '../ReflectionCard';
 import KakeiboSplit from '../KakeiboSplit';
+import HouseholdCostCard from '../HouseholdCostCard';
+import WeeklyChallengeCard from '../WeeklyChallengeCard';
 import { getCategory } from '../../data/categories';
 import { useAllCategories } from '../../hooks/useCategories';
 import { useCategoryLabel } from '../../i18n/useCategoryLabel';
@@ -115,6 +117,10 @@ export default function Dashboard({
       </div>
 
       <KakeiboSplit />
+
+      <WeeklyChallengeCard />
+
+      <HouseholdCostCard />
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="card p-5">

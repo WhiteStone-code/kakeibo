@@ -1,5 +1,6 @@
 import { useStore } from '../store/useStore';
 import { LOCALE_MAP } from '../i18n/translations';
+import { localIsoDate, localMonthKey } from './localDate';
 
 /** Lee el idioma activo directamente del store (sin ser un hook) para que
  * fechas/números se formateen en el idioma correcto sin tener que pasar el
@@ -56,7 +57,32 @@ export const currencySymbol = (currency = 'EUR'): string => {
   }
 };
 
-export const currentMonthKey = (date: Date = new Date()): string => date.toISOString().slice(0, 10).slice(0, 7);
+/** Convierte a número un importe escrito a mano, aceptando coma o punto
+ * como separador decimal y quitando separadores de miles — antes cada
+ * formulario hacía su propio `input.replace(',', '.')`, que solo cambia
+ * la PRIMERA coma: "1.234,56" (formato europeo con miles) se leía como
+ * 1.234, truncando el importe real por ~1000x. Hallazgo real de
+ * auditoría, repetido en 9 formularios distintos — ahora hay un único
+ * sitio que lo hace bien. */
+export function parseDecimal(input: string): number {
+  const trimmed = input.trim();
+  if (!trimmed) return NaN;
+  const lastComma = trimmed.lastIndexOf(',');
+  const lastDot = trimmed.lastIndexOf('.');
+  let normalized: string;
+  if (lastComma > lastDot) {
+    // La coma es el separador decimal; los puntos (si hay) son de miles.
+    normalized = trimmed.replace(/\./g, '').replace(/\s/g, '').replace(',', '.');
+  } else if (lastDot > lastComma) {
+    // El punto es el decimal; las comas (si hay) son de miles.
+    normalized = trimmed.replace(/,/g, '').replace(/\s/g, '');
+  } else {
+    normalized = trimmed.replace(/\s/g, '');
+  }
+  return parseFloat(normalized);
+}
+
+export const currentMonthKey = (date: Date = new Date()): string => localMonthKey(date);
 
 export const monthLabel = (monthKey: string): string => {
   const [y, m] = monthKey.split('-').map(Number);
@@ -84,9 +110,10 @@ export const formatDate = (isoDate: string): string => {
 
 export const daysUntil = (isoDate: string | null): number | null => {
   if (!isoDate) return null;
-  const target = new Date(isoDate);
+  // `new Date('yyyy-MM-dd')` a secas se interpreta como medianoche UTC, no
+  // local — con el sufijo se ancla a medianoche LOCAL, coherente con "hoy".
+  const target = new Date(`${isoDate}T00:00:00`);
   const now = new Date();
-  target.setHours(0, 0, 0, 0);
   now.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 };
@@ -106,22 +133,22 @@ export const getMonthMatrix = (monthKey: string): CalendarDay[][] => {
   const first = new Date(y, m - 1, 1);
   const startOffset = (first.getDay() + 6) % 7; // lunes = 0
   const daysInMonth = new Date(y, m, 0).getDate();
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = localIsoDate();
 
   const cells: CalendarDay[] = [];
   // relleno antes del día 1
   for (let i = startOffset; i > 0; i--) {
     const d = new Date(y, m - 1, 1 - i);
-    cells.push({ date: d.toISOString().slice(0, 10), day: d.getDate(), inMonth: false, isToday: false });
+    cells.push({ date: localIsoDate(d), day: d.getDate(), inMonth: false, isToday: false });
   }
   for (let day = 1; day <= daysInMonth; day++) {
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     cells.push({ date: iso, day, inMonth: true, isToday: iso === todayIso });
   }
   while (cells.length % 7 !== 0) {
-    const last = new Date(cells[cells.length - 1].date);
+    const last = new Date(`${cells[cells.length - 1].date}T00:00:00`);
     last.setDate(last.getDate() + 1);
-    cells.push({ date: last.toISOString().slice(0, 10), day: last.getDate(), inMonth: false, isToday: false });
+    cells.push({ date: localIsoDate(last), day: last.getDate(), inMonth: false, isToday: false });
   }
 
   const weeks: CalendarDay[][] = [];
@@ -153,5 +180,5 @@ export const currentWeekStart = (date: Date = new Date()): string => {
   const d = new Date(date);
   const offset = (d.getDay() + 6) % 7; // lunes = 0
   d.setDate(d.getDate() - offset);
-  return d.toISOString().slice(0, 10);
+  return localIsoDate(d);
 };

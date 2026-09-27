@@ -13,12 +13,19 @@ import type {
 } from '../types';
 import { evaluateAchievements } from '../data/achievements';
 import { CUSTOM_CATEGORY_COLORS } from '../data/categories';
+import { localIsoDate, localMonthKey } from '../utils/localDate';
 
-const currentMonth = () => new Date().toISOString().slice(0, 7);
+// OJO: antes usaban new Date().toISOString(), que es UTC — en cualquier
+// huso con offset negativo (toda Europa continental) eso desplaza "hoy" a
+// la fecha de ayer entre medianoche local y la 1-2 de la madrugada. Bug
+// real encontrado por auditoría: un fijo del día 1 podía marcarse como
+// aplicado en el mes anterior y volver a salir como pendiente horas
+// después. localIsoDate/localMonthKey usan el calendario local de verdad.
+const currentMonth = () => localMonthKey();
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = () => localIsoDate();
 
 /** Redondea a céntimos para que sumas repetidas no acumulen errores de coma flotante. */
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -500,7 +507,7 @@ export function computeStreak(transactions: Transaction[]): number {
   if (!days.has(todayIso())) {
     cursor.setDate(cursor.getDate() - 1);
   }
-  while (days.has(cursor.toISOString().slice(0, 10))) {
+  while (days.has(localIsoDate(cursor))) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }

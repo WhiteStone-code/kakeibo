@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { useExpenseCategories, useIncomeCategories } from '../hooks/useCategories';
 import { useCategoryLabel } from '../i18n/useCategoryLabel';
 import { useT } from '../i18n/useT';
-import { formatMoney } from '../utils/format';
+import { formatMoney, parseDecimal } from '../utils/format';
 import type { TransactionType } from '../types';
 
 /** Alta, edición y borrado de gastos/ingresos fijos (alquiler, nómina,
@@ -40,7 +40,7 @@ export default function RecurringManager() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amountNum = parseFloat(amount.replace(',', '.'));
+    const amountNum = parseDecimal(amount);
     if (!label.trim() || !amountNum || amountNum <= 0) return;
     const cat = categories.find((c) => c.id === category) ?? categories[0];
     addRecurringItem({
@@ -76,6 +76,8 @@ export default function RecurringManager() {
               </div>
               <button
                 onClick={() => updateRecurringItem(r.id, { active: !r.active })}
+                role="switch"
+                aria-checked={r.active}
                 className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
                   r.active ? 'bg-accent' : 'bg-app-soft'
                 }`}
@@ -88,6 +90,8 @@ export default function RecurringManager() {
               </button>
               <button
                 onClick={() => removeRecurringItem(r.id)}
+                aria-label={t('common.delete')}
+                title={t('common.delete')}
                 className="text-soft hover:text-[#e34948] text-sm px-1 shrink-0"
               >
                 ✕

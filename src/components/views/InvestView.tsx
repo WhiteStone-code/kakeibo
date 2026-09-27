@@ -8,7 +8,7 @@ import {
   projectGrowth,
   realValue,
 } from '../../data/investmentScenarios';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, parseDecimal } from '../../utils/format';
 import { useT } from '../../i18n/useT';
 import { translateWithFallback } from '../../i18n/translations';
 import CurrencyConverter from '../CurrencyConverter';
@@ -50,9 +50,9 @@ export default function InvestView() {
   const [profileId, setProfileId] = useState<string | null>(null);
   const highlightedScenarioId = RISK_PROFILES.find((p) => p.id === profileId)?.scenarioId ?? null;
 
-  const startNum = parseFloat(start.replace(',', '.')) || 0;
-  const monthlyNum = parseFloat(monthly.replace(',', '.')) || 0;
-  const inflationNum = (parseFloat(inflationPct.replace(',', '.')) || 0) / 100;
+  const startNum = parseDecimal(start) || 0;
+  const monthlyNum = parseDecimal(monthly) || 0;
+  const inflationNum = (parseDecimal(inflationPct) || 0) / 100;
   const months = years * 12;
 
   const { chartData, finals } = useMemo(() => {
